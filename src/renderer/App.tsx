@@ -17,27 +17,17 @@ function App() {
   const electron = window.electron
 
   return (
-    <div style={{
-      padding: '3rem',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      maxWidth: '800px',
-      margin: '0 auto'
-    }}>
-      <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
+    <div className="p-12 font-sans max-w-3xl mx-auto">
+      <h1 className="text-4xl mb-4">
         Hello World
       </h1>
-      <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '2rem' }}>
+      <p className="text-xl text-gray-600 mb-8">
         Welcome to neovate-code-desktop
       </p>
 
       {electron && (
-        <div style={{
-          backgroundColor: '#f5f5f5',
-          padding: '1.5rem',
-          borderRadius: '8px',
-          fontFamily: 'monospace'
-        }}>
-          <h2 style={{ marginTop: 0, fontSize: '1.2rem' }}>System Info:</h2>
+        <div className="bg-gray-100 p-6 rounded-lg font-mono">
+          <h2 className="mt-0 text-xl">System Info:</h2>
           <p><strong>Platform:</strong> {electron.platform}</p>
           <p><strong>Node:</strong> {electron.versions.node}</p>
           <p><strong>Chrome:</strong> {electron.versions.chrome}</p>
