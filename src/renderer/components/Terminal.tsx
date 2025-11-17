@@ -68,7 +68,14 @@ export const Terminal = ({
 
   return (
     <TerminalContext.Provider value={contextValue}>
-      <div className="flex flex-col flex-1 bg-gray-900 text-gray-200 border-t border-gray-700">
+      <div
+        className="flex flex-col flex-1"
+        style={{
+          backgroundColor: 'var(--bg-surface)',
+          color: 'var(--text-primary)',
+          borderTop: '1px solid var(--border-subtle)',
+        }}
+      >
         <Terminal.Tabs />
         <Terminal.Output />
         <Terminal.Input />
@@ -82,7 +89,13 @@ Terminal.Tabs = function Tabs() {
   const { activeTab, setActiveTab } = useTerminalContext();
 
   return (
-    <div className="flex border-b border-gray-700 bg-gray-850">
+    <div
+      className="flex"
+      style={{
+        borderBottom: '1px solid var(--border-subtle)',
+        backgroundColor: 'var(--bg-primary)',
+      }}
+    >
       <Terminal.Tab id="terminal-1" isActive={activeTab === 'terminal-1'}>
         Terminal 1
       </Terminal.Tab>
@@ -90,7 +103,8 @@ Terminal.Tabs = function Tabs() {
         Terminal 2
       </Terminal.Tab>
       <button
-        className="px-3 text-gray-400 hover:text-white"
+        className="px-3 hover:opacity-70"
+        style={{ color: '#666' }}
         onClick={() => console.log('Add new terminal')}
       >
         +
@@ -112,7 +126,12 @@ Terminal.Tab = function Tab({
 
   return (
     <div
-      className={`px-4 py-2 text-sm cursor-pointer ${isActive ? 'border-b-2 border-blue-500 text-white' : 'text-gray-400 hover:text-gray-200'}`}
+      className="px-4 py-2 text-sm cursor-pointer"
+      style={
+        isActive
+          ? { borderBottom: '2px solid #0070f3', color: 'var(--text-primary)' }
+          : { color: '#666' }
+      }
       onClick={() => setActiveTab(id)}
     >
       {children}
@@ -137,7 +156,7 @@ Terminal.Output = function Output() {
       className="flex-1 overflow-y-auto font-mono text-sm p-4 whitespace-nowrap"
     >
       {lines.length === 0 ? (
-        <div className="text-gray-500">
+        <div style={{ color: '#999' }}>
           Terminal ready. Type a command to begin.
         </div>
       ) : (
@@ -160,14 +179,20 @@ Terminal.Input = function Input() {
   };
 
   return (
-    <div className="border-t border-gray-700 p-2">
+    <div
+      className="p-2"
+      style={{ borderTop: '1px solid var(--border-subtle)' }}
+    >
       <form onSubmit={handleSubmit} className="flex items-center">
-        <span className="text-green-400 mr-2">$</span>
+        <span className="mr-2" style={{ color: '#10B981' }}>
+          $
+        </span>
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          className="flex-1 bg-transparent text-white focus:outline-none font-mono"
+          className="flex-1 bg-transparent focus:outline-none font-mono"
+          style={{ color: 'var(--text-primary)' }}
           placeholder="Type a command..."
         />
       </form>

@@ -57,7 +57,10 @@ export const SessionPanel = ({
 
   return (
     <SessionContext.Provider value={contextValue}>
-      <div className="flex flex-col h-full bg-gray-800">
+      <div
+        className="flex flex-col h-full"
+        style={{ backgroundColor: 'var(--bg-primary)' }}
+      >
         <SessionPanel.Header />
         <SessionPanel.TabBar />
         <SessionPanel.WorkspaceInfo />
@@ -73,19 +76,28 @@ SessionPanel.Header = function Header() {
   const { session } = useSessionContext();
 
   return (
-    <div className="p-4 border-b border-gray-700">
+    <div
+      className="p-4"
+      style={{ borderBottom: '1px solid var(--border-subtle)' }}
+    >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">
+          <h2
+            className="text-lg font-semibold"
+            style={{ color: 'var(--text-primary)' }}
+          >
             {session
               ? `Session ${session.id.substring(0, 8)}`
               : 'No Session Selected'}
           </h2>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm" style={{ color: '#666' }}>
             {session ? `Workspace: ${session.workspaceId.substring(0, 8)}` : ''}
           </p>
         </div>
-        <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm">
+        <button
+          className="px-3 py-1 rounded text-sm"
+          style={{ backgroundColor: '#0070f3', color: 'white' }}
+        >
           Open in Editor
         </button>
       </div>
@@ -95,7 +107,13 @@ SessionPanel.Header = function Header() {
 
 SessionPanel.TabBar = function TabBar() {
   return (
-    <div className="flex border-b border-gray-700 bg-gray-850">
+    <div
+      className="flex"
+      style={{
+        borderBottom: '1px solid var(--border-subtle)',
+        backgroundColor: 'var(--bg-surface)',
+      }}
+    >
       <SessionPanel.Tab isActive>Chat</SessionPanel.Tab>
       <SessionPanel.Tab>Files</SessionPanel.Tab>
       <SessionPanel.Tab>Terminal</SessionPanel.Tab>
@@ -112,7 +130,12 @@ SessionPanel.Tab = function Tab({
 }) {
   return (
     <div
-      className={`px-4 py-2 text-sm cursor-pointer ${isActive ? 'border-b-2 border-blue-500 text-white' : 'text-gray-400 hover:text-gray-200'}`}
+      className="px-4 py-2 text-sm cursor-pointer"
+      style={
+        isActive
+          ? { borderBottom: '2px solid #0070f3', color: 'var(--text-primary)' }
+          : { color: '#666' }
+      }
     >
       {children}
     </div>
@@ -125,12 +148,21 @@ SessionPanel.WorkspaceInfo = function WorkspaceInfo() {
   if (!session) return null;
 
   return (
-    <div className="p-3 bg-gray-850 border-b border-gray-700 text-sm">
-      <div className="flex items-center">
+    <div
+      className="p-3 text-sm"
+      style={{
+        backgroundColor: 'var(--bg-surface)',
+        borderBottom: '1px solid var(--border-subtle)',
+      }}
+    >
+      <div
+        className="flex items-center"
+        style={{ color: 'var(--text-primary)' }}
+      >
         <BranchIcon />
         <span className="ml-2">main</span>
         <span className="mx-2">•</span>
-        <span className="text-gray-400">Created 2 hours ago</span>
+        <span style={{ color: '#666' }}>Created 2 hours ago</span>
         <span className="ml-auto flex items-center">
           <StatusIcon />
           <span className="ml-1">Active</span>
@@ -146,7 +178,7 @@ SessionPanel.Messages = function Messages() {
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {messages.length === 0 ? (
-        <div className="text-center text-gray-500 mt-8">
+        <div className="text-center mt-8" style={{ color: '#999' }}>
           No messages yet. Start a conversation!
         </div>
       ) : (
@@ -166,7 +198,11 @@ SessionPanel.Message = function Message({ message }: { message: Message }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[80%] rounded-lg p-3 ${isUser ? 'bg-blue-600' : 'bg-gray-700'}`}
+        className="max-w-[80%] rounded-lg p-3"
+        style={{
+          backgroundColor: isUser ? '#0070f3' : 'var(--bg-surface)',
+          color: isUser ? 'white' : 'var(--text-primary)',
+        }}
       >
         <div className="flex items-center mb-1">
           <span className="text-xs font-semibold">
@@ -176,7 +212,10 @@ SessionPanel.Message = function Message({ message }: { message: Message }) {
                 ? 'Assistant'
                 : 'System'}
           </span>
-          <span className="text-xs text-gray-400 ml-2">
+          <span
+            className="text-xs ml-2"
+            style={{ color: isUser ? 'rgba(255,255,255,0.7)' : '#666' }}
+          >
             {new Date(message.timestamp).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
@@ -199,7 +238,10 @@ SessionPanel.ChatInput = function ChatInput() {
   };
 
   return (
-    <div className="p-4 border-t border-gray-700">
+    <div
+      className="p-4"
+      style={{ borderTop: '1px solid var(--border-subtle)' }}
+    >
       <form onSubmit={handleSubmit} className="flex">
         <div className="flex-1 relative">
           <input
@@ -207,7 +249,12 @@ SessionPanel.ChatInput = function ChatInput() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Type your message..."
-            className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: 'var(--bg-surface)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-subtle)',
+            }}
             disabled={isLoading}
           />
           <SessionPanel.Toolbar />
@@ -223,7 +270,8 @@ SessionPanel.Toolbar = function Toolbar() {
     <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
       <button
         type="button"
-        className="p-1 text-gray-400 hover:text-white"
+        className="p-1 hover:opacity-70"
+        style={{ color: '#666' }}
         title="Attach file"
       >
         <AttachIcon />
@@ -241,11 +289,12 @@ SessionPanel.SendButton = function SendButton() {
     <button
       type="submit"
       disabled={!canSend}
-      className={`ml-2 px-4 py-2 rounded-lg ${
+      className="ml-2 px-4 py-2 rounded-lg"
+      style={
         canSend
-          ? 'bg-blue-600 hover:bg-blue-700 text-white'
-          : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-      }`}
+          ? { backgroundColor: '#0070f3', color: 'white' }
+          : { backgroundColor: '#e0e0e0', color: '#999', cursor: 'not-allowed' }
+      }
     >
       {isLoading ? <SpinnerIcon /> : <SendIcon />}
     </button>

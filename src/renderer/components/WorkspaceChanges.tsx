@@ -45,7 +45,14 @@ export const WorkspaceChanges = ({
 
   return (
     <WorkspaceChangesContext.Provider value={contextValue}>
-      <div className="flex flex-col flex-1 bg-gray-900 text-gray-200 border-b border-gray-700">
+      <div
+        className="flex flex-col flex-1"
+        style={{
+          backgroundColor: 'var(--bg-surface)',
+          color: 'var(--text-primary)',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
         <WorkspaceChanges.Header />
         {changesCount > 0 ? (
           <WorkspaceChanges.FileList />
@@ -62,31 +69,36 @@ WorkspaceChanges.Header = function Header() {
   const { viewMode, setViewMode, changesCount } = useWorkspaceChangesContext();
 
   return (
-    <div className="p-4 border-b border-gray-700">
+    <div
+      className="p-4"
+      style={{ borderBottom: '1px solid var(--border-subtle)' }}
+    >
       <div className="flex justify-between items-center mb-3">
         <div className="flex space-x-2">
           <button
-            className={`px-3 py-1 text-sm rounded ${
+            className="px-3 py-1 text-sm rounded"
+            style={
               viewMode === 'changes'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
+                ? { backgroundColor: '#0070f3', color: 'white' }
+                : { backgroundColor: '#e0e0e0', color: '#666' }
+            }
             onClick={() => setViewMode('changes')}
           >
             Changes {changesCount > 0 && `(${changesCount})`}
           </button>
           <button
-            className={`px-3 py-1 text-sm rounded ${
+            className="px-3 py-1 text-sm rounded"
+            style={
               viewMode === 'all-files'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
+                ? { backgroundColor: '#0070f3', color: 'white' }
+                : { backgroundColor: '#e0e0e0', color: '#666' }
+            }
             onClick={() => setViewMode('all-files')}
           >
             All Files
           </button>
         </div>
-        <button className="p-1 hover:bg-gray-700 rounded">
+        <button className="p-1 rounded hover:opacity-70">
           <SearchIcon />
         </button>
       </div>
@@ -94,7 +106,12 @@ WorkspaceChanges.Header = function Header() {
         <input
           type="text"
           placeholder="Search files..."
-          className="w-full bg-gray-800 text-white rounded px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded px-3 py-1 text-sm focus:outline-none focus:ring-1"
+          style={{
+            backgroundColor: 'var(--bg-primary)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-subtle)',
+          }}
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
           <SearchIcon />
@@ -109,7 +126,10 @@ WorkspaceChanges.FileList = function FileList() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="p-2 text-xs text-gray-400 uppercase tracking-wide">
+      <div
+        className="p-2 text-xs uppercase tracking-wide"
+        style={{ color: '#666' }}
+      >
         Modified Files
       </div>
       <div className="space-y-1">
@@ -123,7 +143,7 @@ WorkspaceChanges.FileList = function FileList() {
 
 WorkspaceChanges.FileItem = function FileItem({ file }: { file: string }) {
   return (
-    <div className="flex items-center p-2 hover:bg-gray-800 cursor-pointer">
+    <div className="flex items-center p-2 cursor-pointer hover:opacity-80">
       <div className="flex items-center justify-center w-6 h-6 mr-2">
         <FileIcon />
       </div>
@@ -131,10 +151,13 @@ WorkspaceChanges.FileItem = function FileItem({ file }: { file: string }) {
         <div className="text-sm truncate">{file}</div>
       </div>
       <div className="flex items-center">
-        <span className="text-xs bg-yellow-500 text-yellow-900 px-1.5 py-0.5 rounded mr-1">
+        <span
+          className="text-xs px-1.5 py-0.5 rounded mr-1"
+          style={{ backgroundColor: '#fbbf24', color: '#78350f' }}
+        >
           M
         </span>
-        <button className="p-1 hover:bg-gray-700 rounded">
+        <button className="p-1 rounded hover:opacity-70">
           <MoreIcon />
         </button>
       </div>
@@ -148,8 +171,13 @@ WorkspaceChanges.EmptyState = function EmptyState() {
       <div className="mb-4">
         <CheckIcon />
       </div>
-      <h3 className="text-lg font-medium mb-1">No changes</h3>
-      <p className="text-gray-400 text-sm">
+      <h3
+        className="text-lg font-medium mb-1"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        No changes
+      </h3>
+      <p className="text-sm" style={{ color: '#666' }}>
         All files are up to date with the remote repository
       </p>
     </div>

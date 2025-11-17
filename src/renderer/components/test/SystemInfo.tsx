@@ -21,7 +21,13 @@ export const SystemInfo = () => {
   }
 
   return (
-    <div className="bg-gray-700 p-4 rounded-lg font-mono text-sm mb-4">
+    <div
+      className="p-4 rounded-lg font-mono text-sm mb-4"
+      style={{
+        backgroundColor: 'var(--bg-surface)',
+        color: 'var(--text-primary)',
+      }}
+    >
       <h2 className="mt-0 text-lg">System Info:</h2>
       <p>
         <strong>Platform:</strong> {electron.platform}

@@ -2,4 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "./components/components.css";
+:root {
+  --bg-primary: #ffffff;
+  --bg-surface: #fafafa;
+  --border-subtle: #eaeaea;
+  --text-primary: #171717;
+}
+
+/* Dark theme utilities no longer needed - components will gradually migrate to CSS variables */
+/* @import "./components/components.css"; */

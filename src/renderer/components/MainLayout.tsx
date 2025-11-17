@@ -88,7 +88,10 @@ export const MainLayout = ({
     : null;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900">
+    <div
+      className="flex flex-col h-screen"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
+    >
       <div className="flex flex-1 overflow-hidden">
         <RepoSidebar
           repos={repos}
@@ -105,7 +108,10 @@ export const MainLayout = ({
           />
         </div>
 
-        <div className="flex flex-col w-80 border-l border-gray-700">
+        <div
+          className="flex flex-col w-80"
+          style={{ borderLeft: '1px solid var(--border-subtle)' }}
+        >
           <WorkspaceChanges workspace={selectedWorkspace} />
           <Terminal onExecuteCommand={onExecuteCommand} />
         </div>

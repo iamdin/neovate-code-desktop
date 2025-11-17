@@ -74,7 +74,8 @@ export const DirectoryList = () => {
   return (
     <div className="mt-4">
       <button
-        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        className="font-bold py-2 px-4 rounded"
+        style={{ backgroundColor: '#0070f3', color: 'white' }}
         onClick={handleListDirectory}
       >
         List Project Directory
@@ -82,7 +83,12 @@ export const DirectoryList = () => {
 
       {message && (
         <div
-          className={`mt-4 p-4 rounded ${message.includes('cancelled') ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}`}
+          className="mt-4 p-4 rounded"
+          style={
+            message.includes('cancelled')
+              ? { backgroundColor: '#dbeafe', color: '#1e3a8a' }
+              : { backgroundColor: '#fee2e2', color: '#991b1b' }
+          }
         >
           {message}
         </div>
@@ -90,12 +96,21 @@ export const DirectoryList = () => {
 
       {files.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-lg font-bold">Directory Contents:</h3>
-          <ul className="mt-2 border border-gray-600 rounded p-4 max-h-40 overflow-y-auto">
+          <h3
+            className="text-lg font-bold"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Directory Contents:
+          </h3>
+          <ul
+            className="mt-2 rounded p-4 max-h-40 overflow-y-auto"
+            style={{ border: '1px solid var(--border-subtle)' }}
+          >
             {files.map((file, index) => (
               <li
                 key={index}
-                className="py-1 border-b border-gray-700 last:border-b-0"
+                className="py-1 last:border-b-0"
+                style={{ borderBottom: '1px solid var(--border-subtle)' }}
               >
                 {file}
               </li>

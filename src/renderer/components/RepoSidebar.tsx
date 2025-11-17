@@ -68,7 +68,14 @@ export const RepoSidebar = ({
 
   return (
     <RepoContext.Provider value={contextValue}>
-      <div className="flex flex-col h-full bg-gray-900 text-gray-200 w-64 border-r border-gray-700">
+      <div
+        className="flex flex-col h-full w-64"
+        style={{
+          backgroundColor: 'var(--bg-surface)',
+          color: 'var(--text-primary)',
+          borderRight: '1px solid var(--border-subtle)',
+        }}
+      >
         <RepoSidebar.Header />
         <div className="flex-1 overflow-y-auto">
           {repos.map((repo) => (
@@ -84,16 +91,19 @@ export const RepoSidebar = ({
 // Compound components
 RepoSidebar.Header = function Header() {
   return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-700">
+    <div
+      className="flex items-center justify-between p-4"
+      style={{ borderBottom: '1px solid var(--border-subtle)' }}
+    >
       <h2 className="text-lg font-semibold">Repositories</h2>
       <div className="flex space-x-2">
-        <button className="p-1 hover:bg-gray-700 rounded">
+        <button className="p-1 rounded hover:opacity-70">
           <MinimizeIcon />
         </button>
-        <button className="p-1 hover:bg-gray-700 rounded">
+        <button className="p-1 rounded hover:opacity-70">
           <MaximizeIcon />
         </button>
-        <button className="p-1 hover:bg-gray-700 rounded">
+        <button className="p-1 rounded hover:opacity-70">
           <CloseIcon />
         </button>
       </div>
@@ -108,7 +118,7 @@ RepoSidebar.Folder = function Folder({ repo }: { repo: RepoData }) {
   return (
     <div>
       <div
-        className="flex items-center justify-between p-3 hover:bg-gray-800 cursor-pointer"
+        className="flex items-center justify-between p-3 cursor-pointer hover:opacity-80"
         onClick={() => toggleFolder(repo.path)}
       >
         <div className="flex items-center">
@@ -145,12 +155,15 @@ RepoSidebar.Workspace = function Workspace({
   // For now, we'll just show a placeholder
   return (
     <div
-      className={`flex items-center p-2 pl-6 hover:bg-gray-800 cursor-pointer ${isSelected ? 'bg-gray-700' : ''}`}
+      className="flex items-center p-2 pl-6 cursor-pointer hover:opacity-80"
+      style={isSelected ? { backgroundColor: '#f0f0f0' } : {}}
       onClick={() => selectWorkspace(workspaceId)}
     >
       <WorkspaceIcon />
       <span className="ml-2">{workspaceId.substring(0, 8)}</span>
-      <span className="ml-auto text-xs text-gray-400">main</span>
+      <span className="ml-auto text-xs" style={{ color: '#666' }}>
+        main
+      </span>
     </div>
   );
 };
@@ -170,7 +183,8 @@ RepoSidebar.NewWorkspace = function NewWorkspace({
 
   return (
     <div
-      className="flex items-center p-2 pl-6 text-gray-400 hover:bg-gray-800 cursor-pointer"
+      className="flex items-center p-2 pl-6 cursor-pointer hover:opacity-80"
+      style={{ color: '#666' }}
       onClick={handleClick}
     >
       <PlusIcon />
@@ -181,11 +195,14 @@ RepoSidebar.NewWorkspace = function NewWorkspace({
 
 RepoSidebar.Footer = function Footer() {
   return (
-    <div className="p-3 border-t border-gray-700 flex justify-between">
-      <button className="p-2 hover:bg-gray-700 rounded">
+    <div
+      className="p-3 flex justify-between"
+      style={{ borderTop: '1px solid var(--border-subtle)' }}
+    >
+      <button className="p-2 rounded hover:opacity-70">
         <AddRepoIcon />
       </button>
-      <button className="p-2 hover:bg-gray-700 rounded">
+      <button className="p-2 rounded hover:opacity-70">
         <SettingsIcon />
       </button>
     </div>
