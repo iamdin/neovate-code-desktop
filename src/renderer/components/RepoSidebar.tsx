@@ -160,9 +160,19 @@ export const RepoSidebar = ({
 
                 <AccordionPanel>
                   <div className="ml-4 space-y-1">
-                    <div
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded hover:bg-opacity-50 transition-colors"
-                      style={{ color: 'var(--text-secondary)' }}
+                    <button
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded transition-colors w-full text-left"
+                      style={{
+                        color: 'var(--text-secondary)',
+                        backgroundColor: 'transparent',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor =
+                          'var(--bg-base-hover)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
                       onClick={() => handleNewWorkspace(repo.path)}
                     >
                       <HugeiconsIcon
@@ -170,8 +180,8 @@ export const RepoSidebar = ({
                         size={16}
                         strokeWidth={1.5}
                       />
-                      <span className="text-sm">New workspace</span>
-                    </div>
+                      <span className="text-sm font-medium">New workspace</span>
+                    </button>
 
                     {repo.workspaceIds.map((workspaceId) => {
                       const workspace = workspaces[workspaceId];
@@ -185,11 +195,26 @@ export const RepoSidebar = ({
                         <div
                           key={workspaceId}
                           className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded transition-colors"
-                          style={
-                            isSelected
-                              ? { backgroundColor: 'var(--bg-base)' }
-                              : {}
-                          }
+                          style={{
+                            backgroundColor: isSelected
+                              ? 'var(--bg-base)'
+                              : 'transparent',
+                            color: isSelected
+                              ? 'var(--text-primary)'
+                              : 'var(--text-secondary)',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.backgroundColor =
+                                'var(--bg-base-hover)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.backgroundColor =
+                                'transparent';
+                            }
+                          }}
                           onClick={() => onSelectWorkspace(workspaceId)}
                         >
                           <HugeiconsIcon
