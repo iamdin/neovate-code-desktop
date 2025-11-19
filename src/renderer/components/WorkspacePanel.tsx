@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import type { WorkspaceData, SessionData } from '../client/types/entities';
 import type { NormalizedMessage } from '../client/types/message';
 import { Button } from '@/components/ui/button';
@@ -363,7 +370,32 @@ WorkspacePanel.WorkspaceInfo = function WorkspaceInfo() {
 };
 
 WorkspacePanel.Messages = function Messages() {
-  const { messages } = useWorkspaceContext();
+  const { messages, selectedSessionId } = useWorkspaceContext();
+
+  // Refs for auto-scroll functionality
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevMessagesLengthRef = useRef(0);
+  const prevSessionIdRef = useRef<string | null>(null);
+
+  // Auto-scroll logic: scroll to bottom when messages change or session switches
+  useEffect(() => {
+    const container = messagesEndRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    const isNearBottom = distanceFromBottom < 100; // 100px threshold
+    const isFirstLoad =
+      prevMessagesLengthRef.current === 0 && messages.length > 0;
+    const isSessionSwitch = prevSessionIdRef.current !== selectedSessionId;
+
+    if (isNearBottom || isFirstLoad || isSessionSwitch) {
+      container.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+    }
+
+    prevMessagesLengthRef.current = messages.length;
+    prevSessionIdRef.current = selectedSessionId;
+  }, [messages, selectedSessionId]);
 
   // if (!activeSessionId) {
   //   return (
@@ -376,7 +408,7 @@ WorkspacePanel.Messages = function Messages() {
   // }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
+    <div ref={messagesEndRef} className="flex-1 overflow-y-auto p-4">
       {messages.length === 0 ? (
         <div className="text-center mt-8" style={{ color: '#999' }}>
           No messages yet. Start a conversation!
