@@ -1,8 +1,29 @@
 // @ts-nocheck
+import { useState, useEffect, useRef } from 'react';
 import { useStore } from './store';
 import { Button } from './components/ui/button';
 
 const TestComponent = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const lastPressTimeRef = useRef(0);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key.toLowerCase() === 'l') {
+        const now = Date.now();
+        if (now - lastPressTimeRef.current < 300) {
+          setIsVisible((prev) => !prev);
+          lastPressTimeRef.current = 0;
+        } else {
+          lastPressTimeRef.current = now;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const {
     selectedRepoPath,
     selectedWorkspaceId,
@@ -20,6 +41,8 @@ const TestComponent = () => {
     selectSession(null);
     console.log('Cleared all selections');
   };
+
+  if (!isVisible) return null;
 
   return (
     <div
