@@ -61,7 +61,6 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
     "lucide-react": "^0.554.0",
-    "marked": "^17.0.0",
     "marked-react": "^3.0.2",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",

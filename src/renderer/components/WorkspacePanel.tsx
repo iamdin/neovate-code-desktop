@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  memo,
 } from 'react';
 import type { WorkspaceData, SessionData } from '../client/types/entities';
 import type { NormalizedMessage } from '../client/types/message';
@@ -18,6 +19,8 @@ import {
 } from '@/components/ui/empty';
 import { useStore } from '../store';
 import { ChatInput } from './ChatInput';
+import { Message } from './messages/Message';
+import { splitMessages } from './messages/messageHelpers';
 
 // Define the context type
 interface WorkspaceContextType {
@@ -394,6 +397,12 @@ WorkspacePanel.Messages = function Messages() {
   const prevMessagesLengthRef = useRef(0);
   const prevSessionIdRef = useRef<string | null>(null);
 
+  // Split messages into completed and pending sections
+  const { completedMessages, pendingMessages } = useMemo(
+    () => splitMessages(messages),
+    [messages],
+  );
+
   // Auto-scroll logic: scroll to bottom when messages change or session switches
   useEffect(() => {
     const container = messagesEndRef.current;
@@ -414,16 +423,6 @@ WorkspacePanel.Messages = function Messages() {
     prevSessionIdRef.current = selectedSessionId;
   }, [messages, selectedSessionId]);
 
-  // if (!activeSessionId) {
-  //   return (
-  //     <div className="flex-1 flex items-center justify-center">
-  //       <div className="text-center" style={{ color: '#999' }}>
-  //         Select a session to view messages
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div ref={messagesEndRef} className="flex-1 overflow-y-auto p-4">
       {messages.length === 0 ? (
@@ -432,8 +431,22 @@ WorkspacePanel.Messages = function Messages() {
         </div>
       ) : (
         <div className="space-y-4">
-          {messages.map((message) => (
-            <WorkspacePanel.Message key={message.uuid} message={message} />
+          {/* Completed messages (memoized to prevent re-renders) */}
+          {completedMessages.map((message) => (
+            <MemoizedMessage
+              key={message.uuid}
+              message={message}
+              allMessages={messages}
+            />
+          ))}
+
+          {/* Pending messages (dynamic updates) */}
+          {pendingMessages.map((message) => (
+            <Message
+              key={message.uuid}
+              message={message}
+              allMessages={messages}
+            />
           ))}
         </div>
       )}
@@ -441,47 +454,22 @@ WorkspacePanel.Messages = function Messages() {
   );
 };
 
-WorkspacePanel.Message = function Message({
-  message,
-}: {
-  message: NormalizedMessage;
-}) {
-  const isUser = message.role === 'user';
-
-  return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className="max-w-[80%] rounded-lg p-3"
-        style={{
-          backgroundColor: isUser ? '#0070f3' : 'var(--bg-surface)',
-          color: isUser ? 'white' : 'var(--text-primary)',
-        }}
-      >
-        <div className="flex items-center mb-1">
-          <span className="text-xs font-semibold">
-            {message.role === 'user'
-              ? 'You'
-              : message.role === 'assistant'
-                ? 'Assistant'
-                : 'System'}
-          </span>
-          <span
-            className="text-xs ml-2"
-            style={{ color: isUser ? 'rgba(255,255,255,0.7)' : '#666' }}
-          >
-            {new Date(message.timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </span>
-        </div>
-        <div className="text-sm whitespace-pre-wrap">
-          {JSON.stringify(message)}
-        </div>
-      </div>
-    </div>
-  );
-};
+// Memoized message component to prevent re-renders of completed messages
+const MemoizedMessage = memo(
+  ({
+    message,
+    allMessages,
+  }: {
+    message: NormalizedMessage;
+    allMessages: NormalizedMessage[];
+  }) => {
+    return <Message message={message} allMessages={allMessages} />;
+  },
+  (prevProps, nextProps) => {
+    // Only re-render if the message UUID changes (which shouldn't happen)
+    return prevProps.message.uuid === nextProps.message.uuid;
+  },
+);
 
 // Icons
 function FolderIcon() {
