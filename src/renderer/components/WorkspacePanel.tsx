@@ -254,8 +254,8 @@ export const WorkspacePanel = ({
             isLoading={isLoading}
             placeholder={
               selectedSessionId
-                ? 'Type your message...'
-                : 'Type your message with a new session...'
+                ? 'Ask anything, @ for context'
+                : 'Ask anything, @ for context with a new session...'
             }
             disabled={isLoading}
           />

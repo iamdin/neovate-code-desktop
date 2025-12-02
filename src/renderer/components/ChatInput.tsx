@@ -1,4 +1,5 @@
 import { Textarea } from '@/components/ui/textarea';
+import { useWorkspaceContext } from './WorkspacePanel';
 
 interface ChatInputProps {
   value: string;
@@ -18,6 +19,7 @@ export function ChatInput({
   disabled = false,
 }: ChatInputProps) {
   const canSend = value.trim() && !isLoading;
+  const { workspace } = useWorkspaceContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +59,9 @@ export function ChatInput({
             }}
           >
             <ModelIcon />
-            <span className="text-xs font-medium">Claude 3.5 Sonnet</span>
+            <span className="text-xs font-medium">
+              {workspace.context.settings?.model || 'Not set'}
+            </span>
           </button>
           <button
             type="button"
