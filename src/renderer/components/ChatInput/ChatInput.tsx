@@ -90,10 +90,14 @@ export function ChatInput({
   };
 
   const borderColor = useMemo(() => {
+    // Memory and bash input modes take precedence
     if (mode === 'memory') return 'var(--brand-purple, #8b5cf6)';
     if (mode === 'bash') return 'var(--brand-orange, #f97316)';
+    // Plan mode colors
+    if (planMode === 'plan') return '#3b82f6';
+    if (planMode === 'brainstorm') return '#8b5cf6';
     return 'var(--border-subtle)';
-  }, [mode]);
+  }, [mode, planMode]);
 
   const modeInfo = useMemo(() => {
     if (mode === 'memory')
@@ -216,9 +220,11 @@ export function ChatInput({
                     className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                     style={{
                       color:
-                        planMode === 'brainstorm'
-                          ? 'var(--brand-primary, #3b82f6)'
-                          : 'var(--text-secondary)',
+                        planMode === 'plan'
+                          ? '#3b82f6'
+                          : planMode === 'brainstorm'
+                            ? '#8b5cf6'
+                            : 'var(--text-secondary)',
                     }}
                   >
                     <HugeiconsIcon icon={NoteEditIcon} size={14} />
@@ -227,9 +233,11 @@ export function ChatInput({
                 }
               />
               <TooltipPopup>
-                {planMode === 'plan'
-                  ? 'Switch to brainstorm'
-                  : 'Switch to plan'}{' '}
+                {planMode === 'normal'
+                  ? 'Switch to plan mode'
+                  : planMode === 'plan'
+                    ? 'Switch to brainstorm mode'
+                    : 'Switch to normal mode'}{' '}
                 (Shift+Tab)
               </TooltipPopup>
             </Tooltip>

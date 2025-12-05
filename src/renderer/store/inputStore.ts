@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type InputMode = 'prompt' | 'bash' | 'memory';
-export type PlanMode = 'plan' | 'brainstorm';
+export type PlanMode = 'normal' | 'plan' | 'brainstorm';
 
 interface InputState {
   value: string;
@@ -37,7 +37,7 @@ export const useInputStore = create<InputState & InputActions>((set) => ({
   draftInput: '',
   history: [],
   queuedMessages: [],
-  planMode: 'plan',
+  planMode: 'normal',
   thinkingEnabled: false,
   pastedTextMap: {},
   pastedImageMap: {},
@@ -51,7 +51,12 @@ export const useInputStore = create<InputState & InputActions>((set) => ({
   clearQueue: () => set({ queuedMessages: [] }),
   togglePlanMode: () =>
     set((state) => ({
-      planMode: state.planMode === 'plan' ? 'brainstorm' : 'plan',
+      planMode:
+        state.planMode === 'normal'
+          ? 'plan'
+          : state.planMode === 'plan'
+            ? 'brainstorm'
+            : 'normal',
     })),
   toggleThinking: () =>
     set((state) => ({ thinkingEnabled: !state.thinkingEnabled })),
