@@ -43,6 +43,7 @@ interface StoreState {
   selectedWorkspaceId: WorkspaceId | null;
   selectedSessionId: SessionId | null;
   showSettings: boolean;
+  sidebarCollapsed: boolean;
 
   // Config state
   globalConfig: Record<string, any> | null;
@@ -93,6 +94,7 @@ interface StoreActions {
   selectWorkspace: (id: string | null) => void;
   selectSession: (id: string | null) => void;
   setShowSettings: (show: boolean) => void;
+  toggleSidebar: () => void;
 
   // Config actions
   loadGlobalConfig: () => Promise<void>;
@@ -129,6 +131,7 @@ const useStore = create<Store>()((set, get) => ({
   selectedWorkspaceId: null,
   selectedSessionId: null,
   showSettings: false,
+  sidebarCollapsed: false,
 
   // Initial config state
   globalConfig: null,
@@ -621,6 +624,12 @@ const useStore = create<Store>()((set, get) => ({
   setShowSettings: (show: boolean) => {
     set(() => ({
       showSettings: show,
+    }));
+  },
+
+  toggleSidebar: () => {
+    set((state) => ({
+      sidebarCollapsed: !state.sidebarCollapsed,
     }));
   },
 

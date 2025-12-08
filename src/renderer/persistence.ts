@@ -18,6 +18,7 @@ interface PersistedState {
   selectedWorkspaceId: string | null;
   selectedSessionId: string | null;
   sessions: Record<string, any>;
+  sidebarCollapsed: boolean;
 }
 
 // Debounce helper
@@ -69,6 +70,7 @@ export function setupPersistence(store: StoreApi<any>): void {
       selectedWorkspaceId: state.selectedWorkspaceId || null,
       selectedSessionId: state.selectedSessionId || null,
       sessions: state.sessions || {},
+      sidebarCollapsed: state.sidebarCollapsed || false,
     };
   };
 
@@ -76,6 +78,7 @@ export function setupPersistence(store: StoreApi<any>): void {
   const debouncedSave = debounce(async () => {
     try {
       const persistableState = getPersistableState();
+      // @ts-ignore
       await window.electron.saveStore(persistableState);
     } catch (error) {
       console.error('Failed to save store:', error);
@@ -103,6 +106,7 @@ export function setupPersistence(store: StoreApi<any>): void {
  */
 export async function hydrateStore(store: StoreApi<any>): Promise<boolean> {
   try {
+    // @ts-ignore
     const persistedState = await window.electron.loadStore();
 
     // No persisted state - fresh start
@@ -118,6 +122,7 @@ export async function hydrateStore(store: StoreApi<any>): Promise<boolean> {
       selectedWorkspaceId = null,
       selectedSessionId = null,
       sessions = {},
+      sidebarCollapsed = false,
     } = persistedState;
 
     // Validate selections exist in loaded entities
@@ -156,6 +161,7 @@ export async function hydrateStore(store: StoreApi<any>): Promise<boolean> {
         repos,
         workspaces,
         sessions,
+        sidebarCollapsed,
 
         selectedRepoPath: validatedRepoPath,
         selectedWorkspaceId: validatedWorkspaceId,

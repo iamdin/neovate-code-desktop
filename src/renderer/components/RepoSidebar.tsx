@@ -12,6 +12,8 @@ import {
   DatabaseIcon,
   CloudIcon,
   Comment01Icon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
 } from '@hugeicons/core-free-icons';
 import { formatDistanceToNowStrict } from 'date-fns';
 import type { RepoData } from '../client/types/entities';
@@ -60,9 +62,7 @@ import { toastManager } from './ui/toast';
 
 export const RepoSidebar = ({
   repos,
-  selectedRepoPath,
   selectedWorkspaceId,
-  onSelectRepo,
   onSelectWorkspace,
 }: {
   repos: RepoData[];
@@ -85,6 +85,8 @@ export const RepoSidebar = ({
   const selectWorkspace = useStore((state) => state.selectWorkspace);
   const selectSession = useStore((state) => state.selectSession);
   const createSession = useStore((state) => state.createSession);
+  const sidebarCollapsed = useStore((state) => state.sidebarCollapsed);
+  const toggleSidebar = useStore((state) => state.toggleSidebar);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [alertDialogOpen, setAlertDialogOpen] = useState(false);
@@ -181,292 +183,299 @@ export const RepoSidebar = ({
 
   return (
     <div
-      className="flex flex-col h-full w-64"
+      className={`flex flex-col h-full transition-all duration-200 ${sidebarCollapsed ? 'w-12' : 'w-64'}`}
       style={{
         backgroundColor: 'var(--bg-surface)',
         color: 'var(--text-primary)',
         borderRight: '1px solid var(--border-subtle)',
       }}
     >
-      <RepoSidebar.Header />
+      <RepoSidebar.Header
+        collapsed={sidebarCollapsed}
+        onToggle={toggleSidebar}
+      />
 
-      <div className="flex-1 overflow-y-auto">
-        {repos.length === 0 ? (
-          <Empty>
-            <EmptyMedia variant="icon">
-              <HugeiconsIcon
-                icon={FolderIcon}
-                size={48}
-                strokeWidth={1.5}
-                style={{ color: 'var(--text-tertiary)' }}
-              />
-            </EmptyMedia>
-            <EmptyHeader>
-              <EmptyTitle>No repositories</EmptyTitle>
-              <EmptyDescription>
-                Click the + icon below to add your first repository
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : (
-          <Accordion value={openRepos} onValueChange={setOpenRepos}>
-            {repos.map((repo) => (
-              <AccordionItem key={repo.path} value={repo.path}>
-                <AccordionTrigger className="px-3 py-2 hover:bg-opacity-50">
-                  <div className="flex items-center gap-2 flex-1">
-                    <HugeiconsIcon
-                      icon={FolderIcon}
-                      size={18}
-                      strokeWidth={1.5}
-                    />
-                    <span className="font-medium text-sm">{repo.name}</span>
-                    <span
-                      className="ml-auto text-xs px-2 py-0.5 rounded"
-                      style={{
-                        backgroundColor: 'var(--bg-base)',
-                        color: 'var(--text-secondary)',
-                      }}
-                    >
-                      {repo.workspaceIds.length}
-                    </span>
-                    <button
-                      className="p-1 rounded hover:bg-opacity-70"
-                      onClick={(e) => handleRepoInfoClick(repo, e)}
-                      style={{ color: 'var(--text-secondary)' }}
-                    >
+      {!sidebarCollapsed && (
+        <div className="flex-1 overflow-y-auto">
+          {repos.length === 0 ? (
+            <Empty>
+              <EmptyMedia variant="icon">
+                <HugeiconsIcon
+                  icon={FolderIcon}
+                  size={48}
+                  strokeWidth={1.5}
+                  style={{ color: 'var(--text-tertiary)' }}
+                />
+              </EmptyMedia>
+              <EmptyHeader>
+                <EmptyTitle>No repositories</EmptyTitle>
+                <EmptyDescription>
+                  Click the + icon below to add your first repository
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <Accordion value={openRepos} onValueChange={setOpenRepos}>
+              {repos.map((repo) => (
+                <AccordionItem key={repo.path} value={repo.path}>
+                  <AccordionTrigger className="px-3 py-2 hover:bg-opacity-50">
+                    <div className="flex items-center gap-2 flex-1">
                       <HugeiconsIcon
-                        icon={InformationCircleIcon}
-                        size={16}
+                        icon={FolderIcon}
+                        size={18}
                         strokeWidth={1.5}
                       />
-                    </button>
-                  </div>
-                </AccordionTrigger>
+                      <span className="font-medium text-sm">{repo.name}</span>
+                      <span
+                        className="ml-auto text-xs px-2 py-0.5 rounded"
+                        style={{
+                          backgroundColor: 'var(--bg-base)',
+                          color: 'var(--text-secondary)',
+                        }}
+                      >
+                        {repo.workspaceIds.length}
+                      </span>
+                      <button
+                        className="p-1 rounded hover:bg-opacity-70"
+                        onClick={(e) => handleRepoInfoClick(repo, e)}
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        <HugeiconsIcon
+                          icon={InformationCircleIcon}
+                          size={16}
+                          strokeWidth={1.5}
+                        />
+                      </button>
+                    </div>
+                  </AccordionTrigger>
 
-                <AccordionPanel>
-                  <div className="ml-4 space-y-1">
-                    <button
-                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded transition-colors w-full text-left"
-                      style={{
-                        color: 'var(--text-secondary)',
-                        backgroundColor: 'transparent',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          'var(--bg-base-hover)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                      onClick={() => handleNewWorkspace(repo.path)}
-                    >
-                      <HugeiconsIcon
-                        icon={PlusSignIcon}
-                        size={16}
-                        strokeWidth={1.5}
-                      />
-                      <span className="text-sm font-medium">New workspace</span>
-                    </button>
+                  <AccordionPanel>
+                    <div className="ml-4 space-y-1">
+                      <button
+                        className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded transition-colors w-full text-left"
+                        style={{
+                          color: 'var(--text-secondary)',
+                          backgroundColor: 'transparent',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            'var(--bg-base-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        onClick={() => handleNewWorkspace(repo.path)}
+                      >
+                        <HugeiconsIcon
+                          icon={PlusSignIcon}
+                          size={16}
+                          strokeWidth={1.5}
+                        />
+                        <span className="text-sm font-medium">
+                          New workspace
+                        </span>
+                      </button>
 
-                    {repo.workspaceIds.map((workspaceId) => {
-                      const workspace = workspaces[workspaceId];
-                      if (!workspace) return null;
+                      {repo.workspaceIds.map((workspaceId) => {
+                        const workspace = workspaces[workspaceId];
+                        if (!workspace) return null;
 
-                      const isWorkspaceSelected =
-                        selectedWorkspaceId === workspaceId;
-                      const changesCount =
-                        workspace.gitState.pendingChanges.length;
+                        const isWorkspaceSelected =
+                          selectedWorkspaceId === workspaceId;
+                        const changesCount =
+                          workspace.gitState.pendingChanges.length;
 
-                      // Get sessions for this workspace, sorted by modified (newest first)
-                      const workspaceSessions = (sessions[workspaceId] || [])
-                        .slice()
-                        .sort((a, b) => b.modified - a.modified);
-                      const expandKey = `${workspaceId}`;
-                      const isExpanded = expandedSessions[expandKey] ?? false;
-                      const visibleSessions = isExpanded
-                        ? workspaceSessions
-                        : workspaceSessions.slice(0, DEFAULT_SESSION_LIMIT);
-                      const hiddenCount =
-                        workspaceSessions.length - DEFAULT_SESSION_LIMIT;
+                        // Get sessions for this workspace, sorted by modified (newest first)
+                        const workspaceSessions = (sessions[workspaceId] || [])
+                          .slice()
+                          .sort((a, b) => b.modified - a.modified);
+                        const expandKey = `${workspaceId}`;
+                        const isExpanded = expandedSessions[expandKey] ?? false;
+                        const visibleSessions = isExpanded
+                          ? workspaceSessions
+                          : workspaceSessions.slice(0, DEFAULT_SESSION_LIMIT);
+                        const hiddenCount =
+                          workspaceSessions.length - DEFAULT_SESSION_LIMIT;
 
-                      return (
-                        <div key={workspaceId}>
-                          <div
-                            className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded transition-colors"
-                            style={{
-                              backgroundColor: isWorkspaceSelected
-                                ? 'var(--bg-base)'
-                                : 'transparent',
-                              color: isWorkspaceSelected
-                                ? 'var(--text-primary)'
-                                : 'var(--text-secondary)',
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isWorkspaceSelected) {
-                                e.currentTarget.style.backgroundColor =
-                                  'var(--bg-base-hover)';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isWorkspaceSelected) {
-                                e.currentTarget.style.backgroundColor =
-                                  'transparent';
-                              }
-                            }}
-                            onClick={() => onSelectWorkspace(workspaceId)}
-                          >
-                            <HugeiconsIcon
-                              icon={GitBranchIcon}
-                              size={16}
-                              strokeWidth={1.5}
-                            />
-                            <span className="flex-1 text-sm">
-                              {workspace.branch}
-                            </span>
-                            {changesCount > 0 && (
-                              <span
-                                className="text-xs px-1.5 py-0.5 rounded"
-                                style={{
-                                  backgroundColor: '#fef3c7',
-                                  color: '#92400e',
-                                }}
-                              >
-                                {changesCount}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Session list */}
-                          <div className="ml-4">
-                            {/* Create session button */}
-                            <button
-                              className="flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded transition-colors w-full text-left"
+                        return (
+                          <div key={workspaceId}>
+                            <div
+                              className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded transition-colors"
                               style={{
-                                color: 'var(--text-tertiary)',
-                                backgroundColor: 'transparent',
+                                backgroundColor: isWorkspaceSelected
+                                  ? 'var(--bg-base)'
+                                  : 'transparent',
+                                color: isWorkspaceSelected
+                                  ? 'var(--text-primary)'
+                                  : 'var(--text-secondary)',
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  'var(--bg-base-hover)';
-                                e.currentTarget.style.color =
-                                  'var(--text-secondary)';
+                                if (!isWorkspaceSelected) {
+                                  e.currentTarget.style.backgroundColor =
+                                    'var(--bg-base-hover)';
+                                }
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor =
-                                  'transparent';
-                                e.currentTarget.style.color =
-                                  'var(--text-tertiary)';
+                                if (!isWorkspaceSelected) {
+                                  e.currentTarget.style.backgroundColor =
+                                    'transparent';
+                                }
                               }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                selectWorkspace(workspaceId);
-                                createSession();
-                              }}
+                              onClick={() => onSelectWorkspace(workspaceId)}
                             >
                               <HugeiconsIcon
-                                icon={PlusSignIcon}
-                                size={14}
+                                icon={GitBranchIcon}
+                                size={16}
                                 strokeWidth={1.5}
                               />
-                              <span className="text-xs font-medium">
-                                New session
+                              <span className="flex-1 text-sm">
+                                {workspace.branch}
                               </span>
-                            </button>
-
-                            {visibleSessions.map((session) => {
-                              const isSessionSelected =
-                                selectedSessionId === session.sessionId;
-                              const displaySummary =
-                                session.summary && session.summary.length > 20
-                                  ? `${session.summary.slice(0, 20)}…`
-                                  : session.summary || 'New session';
-
-                              return (
-                                <div
-                                  key={session.sessionId}
-                                  className="flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded transition-colors"
+                              {changesCount > 0 && (
+                                <span
+                                  className="text-xs px-1.5 py-0.5 rounded"
                                   style={{
-                                    backgroundColor: isSessionSelected
-                                      ? 'var(--bg-base)'
-                                      : 'transparent',
-                                    color: isSessionSelected
-                                      ? 'var(--text-primary)'
-                                      : 'var(--text-tertiary)',
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!isSessionSelected) {
-                                      e.currentTarget.style.backgroundColor =
-                                        'var(--bg-base-hover)';
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!isSessionSelected) {
-                                      e.currentTarget.style.backgroundColor =
-                                        'transparent';
-                                    }
-                                  }}
-                                  onClick={() => {
-                                    selectWorkspace(workspaceId);
-                                    selectSession(session.sessionId);
+                                    backgroundColor: '#fef3c7',
+                                    color: '#92400e',
                                   }}
                                 >
-                                  <HugeiconsIcon
-                                    icon={Comment01Icon}
-                                    size={14}
-                                    strokeWidth={1.5}
-                                  />
-                                  <span className="flex-1 text-xs truncate">
-                                    {displaySummary}
-                                  </span>
-                                  <span
-                                    className="text-xs"
-                                    style={{ color: 'var(--text-tertiary)' }}
-                                  >
-                                    {formatRelativeTime(session.modified)}
-                                  </span>
-                                </div>
-                              );
-                            })}
+                                  {changesCount}
+                                </span>
+                              )}
+                            </div>
 
-                            {/* Show more/less toggle */}
-                            {hiddenCount > 0 && (
+                            {/* Session list */}
+                            <div className="ml-4">
+                              {/* Create session button */}
                               <button
-                                className="px-3 py-1 text-xs cursor-pointer transition-colors"
-                                style={{ color: 'var(--text-tertiary)' }}
+                                className="flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded transition-colors w-full text-left"
+                                style={{
+                                  color: 'var(--text-tertiary)',
+                                  backgroundColor: 'transparent',
+                                }}
                                 onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    'var(--bg-base-hover)';
                                   e.currentTarget.style.color =
                                     'var(--text-secondary)';
                                 }}
                                 onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor =
+                                    'transparent';
                                   e.currentTarget.style.color =
                                     'var(--text-tertiary)';
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setExpandedSessions((prev) => ({
-                                    ...prev,
-                                    [expandKey]: !prev[expandKey],
-                                  }));
+                                  selectWorkspace(workspaceId);
+                                  createSession();
                                 }}
                               >
-                                {isExpanded
-                                  ? 'Show less'
-                                  : `Show ${hiddenCount} more`}
+                                <HugeiconsIcon
+                                  icon={PlusSignIcon}
+                                  size={14}
+                                  strokeWidth={1.5}
+                                />
+                                <span className="text-xs font-medium">
+                                  New session
+                                </span>
                               </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </AccordionPanel>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        )}
-      </div>
 
-      <RepoSidebar.Footer />
+                              {visibleSessions.map((session) => {
+                                const isSessionSelected =
+                                  selectedSessionId === session.sessionId;
+                                const displaySummary =
+                                  session.summary && session.summary.length > 20
+                                    ? `${session.summary.slice(0, 20)}…`
+                                    : session.summary || 'New session';
+
+                                return (
+                                  <div
+                                    key={session.sessionId}
+                                    className="flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded transition-colors"
+                                    style={{
+                                      backgroundColor: isSessionSelected
+                                        ? 'var(--bg-base)'
+                                        : 'transparent',
+                                      color: isSessionSelected
+                                        ? 'var(--text-primary)'
+                                        : 'var(--text-tertiary)',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (!isSessionSelected) {
+                                        e.currentTarget.style.backgroundColor =
+                                          'var(--bg-base-hover)';
+                                      }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (!isSessionSelected) {
+                                        e.currentTarget.style.backgroundColor =
+                                          'transparent';
+                                      }
+                                    }}
+                                    onClick={() => {
+                                      selectWorkspace(workspaceId);
+                                      selectSession(session.sessionId);
+                                    }}
+                                  >
+                                    <HugeiconsIcon
+                                      icon={Comment01Icon}
+                                      size={14}
+                                      strokeWidth={1.5}
+                                    />
+                                    <span className="flex-1 text-xs truncate">
+                                      {displaySummary}
+                                    </span>
+                                    <span
+                                      className="text-xs"
+                                      style={{ color: 'var(--text-tertiary)' }}
+                                    >
+                                      {formatRelativeTime(session.modified)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+
+                              {/* Show more/less toggle */}
+                              {hiddenCount > 0 && (
+                                <button
+                                  className="px-3 py-1 text-xs cursor-pointer transition-colors"
+                                  style={{ color: 'var(--text-tertiary)' }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.color =
+                                      'var(--text-secondary)';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.color =
+                                      'var(--text-tertiary)';
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedSessions((prev) => ({
+                                      ...prev,
+                                      [expandKey]: !prev[expandKey],
+                                    }));
+                                  }}
+                                >
+                                  {isExpanded
+                                    ? 'Show less'
+                                    : `Show ${hiddenCount} more`}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </AccordionPanel>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
+        </div>
+      )}
+
+      <RepoSidebar.Footer collapsed={sidebarCollapsed} />
 
       <Dialog
         open={dialogOpen}
@@ -591,29 +600,50 @@ function InfoRow({
   );
 }
 
-RepoSidebar.Header = function Header() {
+RepoSidebar.Header = function Header({
+  collapsed,
+  onToggle,
+}: {
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
   return (
     <div
-      className="flex items-center justify-between px-4 py-3"
+      className={`flex items-center ${collapsed ? 'justify-center px-2' : 'justify-between px-4'} py-3`}
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
-      <h2 className="text-base font-semibold">Repositories</h2>
+      {!collapsed && (
+        <h2 className="text-base font-semibold flex-1">Repositories</h2>
+      )}
+      <button
+        className="p-1 rounded hover:bg-opacity-70 transition-colors"
+        style={{ color: 'var(--text-secondary)' }}
+        onClick={onToggle}
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        <HugeiconsIcon
+          icon={collapsed ? ArrowRightIcon : ArrowLeftIcon}
+          size={18}
+          strokeWidth={1.5}
+        />
+      </button>
     </div>
   );
 };
 
-RepoSidebar.Footer = function Footer() {
+RepoSidebar.Footer = function Footer({ collapsed }: { collapsed: boolean }) {
   const setShowSettings = useStore((state) => state.setShowSettings);
 
   return (
     <div
-      className="px-3 py-2 flex gap-2"
+      className={`py-2 flex ${collapsed ? 'flex-col items-center px-2 gap-1' : 'flex-row px-3 gap-2'}`}
       style={{ borderTop: '1px solid var(--border-subtle)' }}
     >
       <AddRepoMenu>
         <button
           className="p-2 rounded hover:bg-opacity-70 transition-colors"
           style={{ color: 'var(--text-secondary)' }}
+          title="Add repository"
         >
           <HugeiconsIcon icon={PlusSignIcon} size={18} strokeWidth={1.5} />
         </button>
@@ -622,6 +652,7 @@ RepoSidebar.Footer = function Footer() {
         className="p-2 rounded hover:bg-opacity-70 transition-colors"
         style={{ color: 'var(--text-secondary)' }}
         onClick={() => setShowSettings(true)}
+        title="Settings"
       >
         <HugeiconsIcon icon={SettingsIcon} size={18} strokeWidth={1.5} />
       </button>
