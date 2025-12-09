@@ -96,23 +96,26 @@ export function ChatInput({
           sessionId,
           key: 'model',
         });
-        console.log('[ChatInput] session.config.get response:', response);
         if (response.success && response.data.value) {
           setSessionConfigModel(response.data.value);
         } else {
           setSessionConfigModel(null);
         }
-      } catch (error) {
-        console.error(
-          '[ChatInput] Failed to fetch session config model:',
-          error,
-        );
+      } catch {
         setSessionConfigModel(null);
       }
     };
 
     fetchSessionConfigModel();
   }, [sessionId, cwd, request]);
+
+  // Reset provider/model selector state when sessionId changes
+  useEffect(() => {
+    setProviders([]);
+    setModels([]);
+    setProviderValue(null);
+    setModelValue(null);
+  }, [sessionId]);
 
   // Determine effective model: session config model takes priority over passed modelName
   const effectiveModelName = sessionConfigModel || modelName;
@@ -135,45 +138,22 @@ export function ChatInput({
   const [providerValue, setProviderValue] = useState<string | null>(null);
   const [modelValue, setModelValue] = useState<string | null>(null);
 
-  // Debug: Log state changes
-  console.log('[ChatInput] Provider/Model Selector State:', {
-    modelName,
-    sessionConfigModel,
-    effectiveModelName,
-    currentProvider,
-    currentModel,
-    providerValue,
-    modelValue,
-    providersCount: providers.length,
-    modelsCount: models.length,
-    hasRequest: !!request,
-    cwd,
-    sessionId,
-  });
-
   // Fetch providers when provider selector opens
   const handleProviderOpen = useCallback(async () => {
-    console.log('[ChatInput] handleProviderOpen called', {
-      request: !!request,
-      cwd,
-      isLoadingProviders,
-    });
     if (!request || !cwd || isLoadingProviders) return;
 
     setIsLoadingProviders(true);
     try {
       const response = await request('providers.list', { cwd });
-      console.log('[ChatInput] providers.list response:', response);
       if (response.success) {
         // Filter to only show providers with valid configuration
         const validProviders = response.data.providers.filter(
           (p: Provider) => p.validEnvs.length > 0 || p.hasApiKey,
         );
-        console.log('[ChatInput] Valid providers:', validProviders);
         setProviders(validProviders);
       }
-    } catch (error) {
-      console.error('[ChatInput] Failed to fetch providers:', error);
+    } catch {
+      // Ignore errors
     } finally {
       setIsLoadingProviders(false);
     }
@@ -183,42 +163,24 @@ export function ChatInput({
   // Returns the fetched models so caller can use them
   const handleModelOpen = useCallback(
     async (providerId?: string): Promise<Model[]> => {
-      console.log('[ChatInput] handleModelOpen called', {
-        providerId,
-        currentProvider,
-        request: !!request,
-        cwd,
-        isLoadingModels,
-      });
       if (!request || !cwd || isLoadingModels) return [];
 
       const targetProvider = providerId || currentProvider;
-      if (!targetProvider) {
-        console.log('[ChatInput] No target provider, skipping model fetch');
-        return [];
-      }
+      if (!targetProvider) return [];
 
       setIsLoadingModels(true);
       try {
         const response = await request('models.list', { cwd });
-        console.log('[ChatInput] models.list response:', response);
         if (response.success) {
-          console.log(
-            '[ChatInput] Looking for provider:',
-            targetProvider,
-            'in groupedModels:',
-            response.data.groupedModels,
-          );
           const providerModels =
             response.data.groupedModels.find(
               (g: { providerId: string }) => g.providerId === targetProvider,
             )?.models || [];
-          console.log('[ChatInput] Provider models found:', providerModels);
           setModels(providerModels);
           return providerModels;
         }
-      } catch (error) {
-        console.error('[ChatInput] Failed to fetch models:', error);
+      } catch {
+        // Ignore errors
       } finally {
         setIsLoadingModels(false);
       }
@@ -230,13 +192,6 @@ export function ChatInput({
   // Handle provider change
   const handleProviderChange = useCallback(
     async (newProvider: string) => {
-      console.log('[ChatInput] handleProviderChange called', {
-        newProvider,
-        currentProvider,
-        request: !!request,
-        cwd,
-        sessionId,
-      });
       if (!request || !cwd || !sessionId || newProvider === currentProvider)
         return;
 
@@ -247,7 +202,6 @@ export function ChatInput({
       if (fetchedModels.length > 0) {
         const firstModel = fetchedModels[0];
         const fullModelValue = `${newProvider}/${firstModel.modelId}`;
-        console.log('[ChatInput] Auto-selecting first model:', fullModelValue);
 
         setModelValue(firstModel.modelId);
 
@@ -258,9 +212,8 @@ export function ChatInput({
             key: 'model',
             value: fullModelValue,
           });
-          console.log('[ChatInput] Auto-selected model set successfully');
-        } catch (error) {
-          console.error('[ChatInput] Failed to auto-set model:', error);
+        } catch {
+          // Ignore errors
         }
       }
     },
@@ -270,21 +223,12 @@ export function ChatInput({
   // Handle model change
   const handleModelChange = useCallback(
     async (newModel: string) => {
-      console.log('[ChatInput] handleModelChange called', {
-        newModel,
-        providerValue,
-        currentProvider,
-        request: !!request,
-        cwd,
-        sessionId,
-      });
       if (!request || !cwd || !sessionId) return;
 
       // Determine which provider to use
       const provider = providerValue || currentProvider;
       const fullModelValue = `${provider}/${newModel}`;
 
-      console.log('[ChatInput] Setting model to:', fullModelValue);
       try {
         await request('session.config.set', {
           cwd,
@@ -292,12 +236,8 @@ export function ChatInput({
           key: 'model',
           value: fullModelValue,
         });
-        console.log('[ChatInput] Model set successfully');
-        // Reset local state after successful update
-        // setProviderValue(null);
-        // setModelValue(null);
-      } catch (error) {
-        console.error('[ChatInput] Failed to set model:', error);
+      } catch {
+        // Ignore errors
       }
     },
     [request, cwd, sessionId, providerValue, currentProvider],
@@ -480,12 +420,10 @@ export function ChatInput({
                   value={providerValue || currentProvider}
                   onChange={(e) => {
                     const value = e.target.value;
-                    console.log('[ChatInput] Provider select onChange:', value);
                     setProviderValue(value);
                     handleProviderChange(value);
                   }}
                   onFocus={() => {
-                    console.log('[ChatInput] Provider select onFocus');
                     handleProviderOpen();
                   }}
                   className="text-xs font-medium bg-transparent border-0 outline-none cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 rounded px-1 py-0.5"
@@ -517,15 +455,10 @@ export function ChatInput({
                   value={modelValue || currentModel}
                   onChange={(e) => {
                     const value = e.target.value;
-                    console.log('[ChatInput] Model select onChange:', value);
                     setModelValue(value);
                     handleModelChange(value);
                   }}
                   onFocus={() => {
-                    console.log(
-                      '[ChatInput] Model select onFocus, providerValue:',
-                      providerValue,
-                    );
                     handleModelOpen(providerValue || undefined);
                   }}
                   className="text-xs font-medium bg-transparent border-0 outline-none cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 rounded px-1 py-0.5 max-w-[150px]"
