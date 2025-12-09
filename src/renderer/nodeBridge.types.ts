@@ -503,6 +503,18 @@ type SessionConfigSetInput = {
   value: any;
 };
 
+type SessionConfigGetInput = {
+  cwd: string;
+  sessionId: string;
+  key?: string;
+};
+type SessionConfigGetOutput = {
+  success: boolean;
+  data: {
+    value: any;
+  };
+};
+
 type SessionConfigRemoveInput = {
   cwd: string;
   sessionId: string;
@@ -819,6 +831,10 @@ export type HandlerMap = {
   'session.config.set': {
     input: SessionConfigSetInput;
     output: SuccessResponse;
+  };
+  'session.config.get': {
+    input: SessionConfigGetInput;
+    output: SessionConfigGetOutput;
   };
   'session.config.remove': {
     input: SessionConfigRemoveInput;
