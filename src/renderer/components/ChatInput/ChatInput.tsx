@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import type React from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -77,15 +77,55 @@ export function ChatInput({
   const { planMode, thinking, togglePlanMode, toggleThinking } =
     useInputStore();
 
-  // Parse modelName into provider and model
+  // State for session config model (fetched from session)
+  const [sessionConfigModel, setSessionConfigModel] = useState<string | null>(
+    null,
+  );
+
+  // Fetch session config model when sessionId changes
+  useEffect(() => {
+    if (!sessionId || !cwd || !request) {
+      setSessionConfigModel(null);
+      return;
+    }
+
+    const fetchSessionConfigModel = async () => {
+      try {
+        const response = await request('session.config.get', {
+          cwd,
+          sessionId,
+          key: 'model',
+        });
+        console.log('[ChatInput] session.config.get response:', response);
+        if (response.success && response.data.value) {
+          setSessionConfigModel(response.data.value);
+        } else {
+          setSessionConfigModel(null);
+        }
+      } catch (error) {
+        console.error(
+          '[ChatInput] Failed to fetch session config model:',
+          error,
+        );
+        setSessionConfigModel(null);
+      }
+    };
+
+    fetchSessionConfigModel();
+  }, [sessionId, cwd, request]);
+
+  // Determine effective model: session config model takes priority over passed modelName
+  const effectiveModelName = sessionConfigModel || modelName;
+
+  // Parse effectiveModelName into provider and model
   const [currentProvider, currentModel] = useMemo(() => {
-    if (!modelName) return ['', ''];
-    const parts = modelName.split('/');
+    if (!effectiveModelName) return ['', ''];
+    const parts = effectiveModelName.split('/');
     if (parts.length >= 2) {
       return [parts[0], parts.slice(1).join('/')];
     }
-    return ['', modelName];
-  }, [modelName]);
+    return ['', effectiveModelName];
+  }, [effectiveModelName]);
 
   // Provider and model selector state
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -98,6 +138,8 @@ export function ChatInput({
   // Debug: Log state changes
   console.log('[ChatInput] Provider/Model Selector State:', {
     modelName,
+    sessionConfigModel,
+    effectiveModelName,
     currentProvider,
     currentModel,
     providerValue,
@@ -425,7 +467,7 @@ export function ChatInput({
           {/* Left side tools */}
           <div className="flex items-center gap-1">
             {/* Provider and Model selectors */}
-            {modelName && request && cwd && sessionId && (
+            {effectiveModelName && request && cwd && sessionId && (
               <div className="flex items-center gap-0.5">
                 <HugeiconsIcon
                   icon={ChipIcon}
