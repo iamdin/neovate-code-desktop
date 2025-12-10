@@ -613,7 +613,7 @@ RepoSidebar.Header = function Header({
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
       {!collapsed && (
-        <h2 className="text-base font-semibold flex-1">Repositories</h2>
+        <h2 className="text-base font-semibold flex-1">Neovate Code Desktop</h2>
       )}
       <button
         className="p-1 rounded hover:bg-opacity-70 transition-colors"
