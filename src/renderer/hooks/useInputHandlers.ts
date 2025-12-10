@@ -32,6 +32,7 @@ export function useInputHandlers({
     history,
     draftInput,
     queuedMessages,
+    planMode,
     setHistoryIndex,
     setDraftInput,
     addToHistory,
@@ -99,6 +100,12 @@ export function useInputHandlers({
     const trimmed = value.trim();
     if (!trimmed) return;
 
+    // In plan mode, show alert instead of submitting
+    if (planMode === 'plan') {
+      alert('Plan mode is not implemented yet');
+      return;
+    }
+
     const { expandedMessage, images } = imageManager.expandImageReferences(
       pasteManager.expandPastedText(trimmed),
     );
@@ -116,6 +123,7 @@ export function useInputHandlers({
     addToHistory,
     pasteManager,
     imageManager,
+    planMode,
   ]);
 
   const handleHistoryUp = useCallback(() => {
