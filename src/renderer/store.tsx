@@ -418,8 +418,7 @@ const useStore = create<Store>()((set, get) => ({
         ...prev.inputBySession,
         [sessionId]: {
           ...defaultSessionInputState,
-          // but keep planMode and thinking
-          // planMode: prev.inputBySession[sessionId]?.planMode || "normal",
+          // but keep thinking
           thinking: prev.inputBySession[sessionId]?.thinking || null,
         },
       },
