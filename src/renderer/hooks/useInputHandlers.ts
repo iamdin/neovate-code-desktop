@@ -62,13 +62,17 @@ export function useInputHandlers({
     fileSuggestion.matchedPaths.length > 0 ||
     slashCommands.suggestions.length > 0;
 
-  const handleDoubleEscape = useDoublePress(onShowForkModal, () => {
-    if ((mode === 'bash' || mode === 'memory') && value.length === 1) {
-      inputState.setValue('');
-    } else {
-      onCancel();
-    }
-  });
+  const handleDoubleEscape = useDoublePress(
+    onShowForkModal,
+    () => {
+      if ((mode === 'bash' || mode === 'memory') && value.length === 1) {
+        inputState.setValue('');
+      } else {
+        onCancel();
+      }
+    },
+    1000,
+  );
 
   const applyFileSuggestion = useCallback(() => {
     const selected = fileSuggestion.getSelected();

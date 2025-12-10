@@ -13,6 +13,7 @@ export function useDoublePress(
     const lastPress = lastPressRef.current;
 
     if (lastPress && now - lastPress < timeout) {
+      // Double press detected - clear timeout and call onDouble
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
@@ -20,14 +21,17 @@ export function useDoublePress(
       lastPressRef.current = null;
       onDouble();
     } else {
+      // First press - call onSingle immediately, then track for potential double press
       lastPressRef.current = now;
+      onSingle?.();
+
+      // Set timeout to clear the lastPress tracking
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       timeoutRef.current = setTimeout(() => {
         lastPressRef.current = null;
         timeoutRef.current = null;
-        onSingle?.();
       }, timeout);
     }
   }, [onDouble, onSingle, timeout]);

@@ -264,7 +264,13 @@ export const WorkspacePanel = ({
           <ActivityIndicator sessionId={selectedSessionId} />
           <ChatInput
             onSubmit={sendMessage}
-            onCancel={() => setInputValue('')}
+            onCancel={() => {
+              // setInputValue('');
+              // alert('on Cancel Not implemented');
+            }}
+            onShowForkModal={() => {
+              alert('fork not implemented');
+            }}
             fetchPaths={fetchPaths}
             fetchCommands={fetchCommands}
             placeholder={
