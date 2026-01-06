@@ -1,16 +1,15 @@
-import { spawn } from 'child_process';
+import { spawn } from 'node:child_process';
+import net from 'node:net';
 import portfinder from 'portfinder';
-import net from 'net';
-import { resolveBinaryPath } from './binaryPath';
 import { IS_DEV } from '../env';
+import { resolveBinaryPath } from './binary-path';
 import {
-  PORT_RANGE_START,
-  PORT_RANGE_END,
-  STARTUP_TIMEOUT_MS,
   POLL_INTERVAL_MS,
-  ErrorCodes,
+  PORT_RANGE_END,
+  PORT_RANGE_START,
+  STARTUP_TIMEOUT_MS,
 } from './constants';
-import type { ServerOptions, ServerInstance } from './types';
+import type { ServerInstance, ServerOptions } from './types';
 
 export async function createNeovateServer(
   options?: ServerOptions,

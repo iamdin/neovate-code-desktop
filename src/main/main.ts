@@ -1,12 +1,12 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import path from 'path';
-import fs from 'fs/promises';
-import os from 'os';
-import { createNeovateServer } from './server/create';
-import type { ServerInstance } from './server/types';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { IS_DEV } from './env';
 import { ErrorCodes } from './server/constants';
+import { createNeovateServer } from './server/server-create';
+import type { ServerInstance } from './server/types';
 
 let mainWindow: BrowserWindow | null = null;
 let serverInstance: ServerInstance | null = null;

@@ -1,8 +1,8 @@
 import { app } from 'electron';
-import fs from 'fs/promises';
-import path from 'path';
-import type { ServerConfig } from './types';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { IS_DEV } from '../env';
+import type { ServerConfig } from './types';
 
 export async function resolveBinaryPath(config: ServerConfig): Promise<string> {
   let binaryPath: string;
