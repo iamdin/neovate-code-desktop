@@ -23,9 +23,7 @@
     "neovate",
     "desktop"
   ],
-  "authors": [
-    "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)"
-  ],
+  "author": "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)",
   "homepage": "https://neovateai.dev",
   "repository": {
     "type": "git",
