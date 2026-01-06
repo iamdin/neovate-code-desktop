@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { IS_DEV } from './env';
 import { ErrorCodes } from './server/constants';
-import { createNeovateServer } from './server/server-create';
+import { createNeovateServer } from './server/create';
 import type { ServerInstance } from './server/types';
 
 let mainWindow: BrowserWindow | null = null;
