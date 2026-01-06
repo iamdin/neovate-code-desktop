@@ -175,7 +175,7 @@ export async function hydrateStore(store: StoreApi<any>): Promise<boolean> {
         selectedRepoPath: validatedRepoPath,
         selectedWorkspaceId: validatedWorkspaceId,
         selectedSessionId: validatedSessionId,
-        state: 'disconnected',
+        state: 'idle',
         transport: null,
         messageBus: null,
       },

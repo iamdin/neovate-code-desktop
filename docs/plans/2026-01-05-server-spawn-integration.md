@@ -56,7 +56,7 @@ Run: `git add package.json package-lock.json && git commit -m "feat: add server 
 ```typescript
 import { app } from 'electron';
 
-export const IS_DEV = !app.isPackaged;
+export const isDev = !app.isPackaged;
 ```
 
 **Step 2: Create constants file**
@@ -123,14 +123,14 @@ import { app } from 'electron';
 import fs from 'fs/promises';
 import path from 'path';
 import type { ServerConfig } from './types';
-import { IS_DEV } from '../env';
+import { isDev } from '../env';
 
 export async function resolveBinaryPath(
   config: ServerConfig,
 ): Promise<string> {
   let binaryPath: string;
 
-  if (IS_DEV) {
+  if (isDev) {
     binaryPath = path.join(config.cwd, 'node_modules/.bin/neovate');
   } else {
     const appPath = app.getAppPath();
@@ -163,7 +163,7 @@ import { spawn } from 'child_process';
 import portfinder from 'portfinder';
 import net from 'net';
 import { resolveBinaryPath } from './binaryPath';
-import { IS_DEV } from '../env';
+import { isDev } from '../env';
 import { PORT_RANGE_START, PORT_RANGE_END, STARTUP_TIMEOUT_MS, POLL_INTERVAL_MS } from './constants';
 import type { ServerOptions, ServerInstance } from './types';
 
@@ -177,7 +177,7 @@ export async function createNeovateServer(
   });
   const timeout = options?.timeout ?? STARTUP_TIMEOUT_MS;
 
-  const cwd = options?.config?.cwd ?? (IS_DEV ? process.cwd() : process.resourcesPath);
+  const cwd = options?.config?.cwd ?? (isDev ? process.cwd() : process.resourcesPath);
   const binaryPath = await resolveBinaryPath({ cwd });
 
   const args = [`serve`, `--hostname=${hostname}`, `--port=${port}`];
@@ -188,7 +188,7 @@ export async function createNeovateServer(
     env: {
       ...process.env,
       NEOVATE_CLIENT: 'desktop',
-      NODE_ENV: IS_DEV ? 'development' : 'production',
+      NODE_ENV: isDev ? 'development' : 'production',
     },
   });
 
@@ -278,7 +278,7 @@ Add after existing imports:
 ```typescript
 import { createNeovateServer } from './server/create';
 import type { ServerInstance } from './server/types';
-import { IS_DEV } from './env';
+import { isDev } from './env';
 ```
 
 **Step 2: Add server instance variable after mainWindow declaration**
@@ -295,7 +295,7 @@ After mainWindow creation but before `mainWindow.on('closed')`, replace any exis
 
 ```typescript
 if (process.env.NODE_ENV !== 'test') {
-  const cwd = IS_DEV ? process.cwd() : process.resourcesPath;
+  const cwd = isDev ? process.cwd() : process.resourcesPath;
 
   await createNeovateServer({ config: { cwd } })
     .then((instance) => {
@@ -327,7 +327,7 @@ ipcMain.on('neovate-server:retry', async () => {
     serverInstance = null;
   }
 
-  const cwd = IS_DEV ? process.cwd() : process.resourcesPath;
+  const cwd = isDev ? process.cwd() : process.resourcesPath;
   createNeovateServer({ config: { cwd } })
     .then((instance) => {
       serverInstance = instance;

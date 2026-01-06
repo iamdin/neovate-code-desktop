@@ -88,15 +88,17 @@ const defaultSessionProcessingState: SessionProcessingState = {
 
 interface StoreState {
   // WebSocket connection state
-  state: 'disconnected' | 'connecting' | 'connected' | 'error';
+  // Flow:
+  // idle -> connecting -> connected
+  // idle/connecting -> error (startup failure)
+  // connected -> disconnected -> connecting -> connected (reconnect loop)
+  state: 'idle' | 'disconnected' | 'connecting' | 'connected' | 'error';
   transport: WebSocketTransport | null;
   messageBus: MessageBus | null;
   initialized: boolean;
 
-  // Server state (for startup flow)
-  serverState: 'splash' | 'ready' | 'error';
+  // Server URL
   serverUrl: string | null;
-  serverError: { code: string; message: string } | null;
 
   // Entity data
   repos: Record<RepoId, RepoData>;
@@ -152,10 +154,7 @@ interface StoreActions {
     think: ThinkingLevel;
   }) => Promise<void>;
 
-  // Server state actions
-  setServerState: (state: 'splash' | 'ready' | 'error') => void;
-  setServerReady: (url: string) => void;
-  setServerError: (error: { code: string; message: string }) => void;
+  // Server URL action
   setUrl: (url: string) => void;
 
   // Session processing state helpers
@@ -226,21 +225,22 @@ interface StoreActions {
 
   // Local JSX slash command actions
   setSlashCommandJSX: (sessionId: string, jsx: React.ReactNode | null) => void;
+
+  // Connection state setter
+  setConnectionState: (state: StoreState['state']) => void;
 }
 
 type Store = StoreState & StoreActions;
 
 const useStore = create<Store>()((set, get) => ({
   // Initial WebSocket state
-  state: 'disconnected',
+  state: 'idle',
   transport: null,
   messageBus: null,
   initialized: false,
 
-  // Initial server state
-  serverState: 'splash',
+  // Initial server URL
   serverUrl: null,
-  serverError: null,
 
   // Initial entity data
   repos: {},
@@ -297,7 +297,7 @@ const useStore = create<Store>()((set, get) => ({
       });
 
       newTransport.onError(() => {
-        set({ state: 'error' });
+        set({ state: 'disconnected' });
       });
 
       newTransport.onClose(() => {
@@ -412,22 +412,6 @@ const useStore = create<Store>()((set, get) => ({
 
     set({ initialized: true });
   },
-
-  setServerState: (state) => set({ serverState: state }),
-
-  setServerReady: (url) =>
-    set({
-      serverState: 'ready',
-      serverUrl: url,
-      serverError: null,
-    }),
-
-  setServerError: (error) =>
-    set({
-      serverState: 'error',
-      serverUrl: null,
-      serverError: error,
-    }),
 
   setUrl: (url) => set({ serverUrl: url }),
 
@@ -1257,6 +1241,8 @@ const useStore = create<Store>()((set, get) => ({
       },
     }));
   },
+
+  setConnectionState: (state) => set({ state }),
 }));
 
 export { useStore, defaultSessionInputState };

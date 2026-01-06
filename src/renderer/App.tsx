@@ -1,18 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from './store';
 import { MainLayout } from './components';
 import { useStoreConnection } from './hooks';
-import { Spinner } from './components/ui';
 import { SettingsPage } from './components/settings';
-import { SplashScreen } from './components/SplashScreen';
 import { ServerErrorDialog } from './components/ServerErrorDialog';
-import { app } from 'electron';
 
 function App() {
-  // Establish WebSocket connection on mount
-  const connectionState = useStoreConnection();
+  const { connectionState, serverError, retry, exit } = useStoreConnection();
 
-  // Get state and actions from the store
   const {
     repos,
     workspaces,
@@ -23,59 +18,8 @@ function App() {
     showSettings,
     getGlobalConfigValue,
     globalConfig,
-    serverState,
-    serverError,
-    setServerReady,
-    setServerError,
-    setServerState,
-    connect,
-    setUrl,
+    initialized,
   } = useStore();
-
-  // Handle server events
-  useEffect(() => {
-    const removeReadyListener = window.electron.onServerReady((data) => {
-      setServerReady(data.url);
-      setUrl(data.url);
-      connect();
-    });
-
-    const removeErrorListener = window.electron.onServerError((data) => {
-      setServerError(data);
-    });
-
-    return () => {
-      removeReadyListener();
-      removeErrorListener();
-    };
-  }, [setServerReady, setServerError, setUrl, connect]);
-
-  // Handle retry
-  const handleRetry = () => {
-    setServerState('splash');
-    window.electron.retryServer();
-  };
-
-  // Handle exit
-  const handleExit = () => {
-    app.quit();
-  };
-
-  // Show splash screen while server is starting
-  if (serverState === 'splash') {
-    return <SplashScreen />;
-  }
-
-  // Show error dialog if server failed
-  if (serverState === 'error') {
-    return (
-      <ServerErrorDialog
-        message={serverError?.message ?? 'An unknown error occurred'}
-        onRetry={handleRetry}
-        onExit={handleExit}
-      />
-    );
-  }
 
   // Get theme from config (default to 'system')
   const theme = getGlobalConfigValue<string>('desktop.theme', 'system');
@@ -137,6 +81,24 @@ function App() {
     }
   }, [theme, globalConfig]);
 
+  console.log('connectionState', connectionState);
+  if (connectionState === 'error') {
+    return (
+      <ServerErrorDialog
+        message={serverError?.message ?? 'An unknown error occurred'}
+        onRetry={retry}
+        onExit={exit}
+      />
+    );
+  }
+  if (
+    connectionState === 'idle' ||
+    connectionState === 'connecting' ||
+    (!initialized && connectionState === 'disconnected')
+  ) {
+    return <AppLoading />;
+  }
+
   // Get the selected workspace
   const selectedWorkspace = selectedWorkspaceId
     ? workspaces[selectedWorkspaceId]
@@ -149,20 +111,6 @@ function App() {
     // For now, we'll just simulate the execution
     return Promise.resolve();
   };
-
-  // Show loading UI while connecting
-  if (connectionState !== 'connected') {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Spinner className="h-8 w-8" />
-          <p className="text-muted-foreground text-sm">
-            Connecting to server...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // Show settings page if enabled
   if (showSettings) {
@@ -184,6 +132,31 @@ function App() {
         onSelectWorkspace={selectWorkspace}
         onExecuteCommand={handleExecuteCommand}
       />
+    </div>
+  );
+}
+
+function AppLoading() {
+  const [text, setText] = useState('');
+  const fullText = 'Neovate';
+
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < fullText.length) {
+        setText(fullText.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 150);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex h-screen w-screen flex-col items-center justify-center bg-white text-neutral-900">
+      <div className="text-6xl font-light">{text}</div>
     </div>
   );
 }

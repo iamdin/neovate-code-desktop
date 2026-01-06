@@ -112,8 +112,12 @@ export const WorkspacePanel = ({
   const activeSession =
     allSessions.find((s) => s.sessionId === selectedSessionId) || null;
 
+  const connectionState = useStore((state) => state.state);
+
   // Fetch sessions when selectedWorkspaceId changes
   useEffect(() => {
+    if (connectionState !== 'connected') return;
+
     if (!selectedWorkspaceId) {
       selectSession(null);
       return;
@@ -141,7 +145,14 @@ export const WorkspacePanel = ({
     };
 
     fetchSessions();
-  }, [selectedWorkspaceId, workspaces, request, setSessions, selectSession]);
+  }, [
+    connectionState,
+    selectedWorkspaceId,
+    workspaces,
+    request,
+    setSessions,
+    selectSession,
+  ]);
 
   // Validate selectedSessionId when sessions load
   useEffect(() => {
@@ -163,6 +174,7 @@ export const WorkspacePanel = ({
 
   // Fetch messages when selectedSessionId changes
   useEffect(() => {
+    if (connectionState !== 'connected') return;
     if (!selectedSessionId || !selectedWorkspaceId) return;
 
     const workspace = workspaces[selectedWorkspaceId];
@@ -184,6 +196,7 @@ export const WorkspacePanel = ({
 
     fetchMessages();
   }, [
+    connectionState,
     selectedSessionId,
     selectedWorkspaceId,
     workspaces,
@@ -193,6 +206,7 @@ export const WorkspacePanel = ({
 
   // Fetch model info once per session to initialize thinking state
   useEffect(() => {
+    if (connectionState !== 'connected') return;
     if (!selectedSessionId || !selectedWorkspaceId) return;
 
     const workspace = workspaces[selectedWorkspaceId];
@@ -241,6 +255,7 @@ export const WorkspacePanel = ({
 
     fetchModelInfo();
   }, [
+    connectionState,
     selectedSessionId,
     selectedWorkspaceId,
     workspaces,

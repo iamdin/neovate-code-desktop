@@ -3,12 +3,12 @@ import { autoUpdater } from 'electron-updater';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { IS_DEV } from './env';
+import { isDev } from './env';
 import { ErrorCodes } from './server/constants';
 import { createNeovateServer } from './server/create';
 import type { ServerInstance } from './server/types';
 
-declare const __dirname: string;
+// declare const _dirname: string;
 
 let mainWindow: BrowserWindow | null = null;
 let serverInstance: ServerInstance | null = null;
@@ -43,25 +43,24 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  // Start Neovate server
-  const cwd = IS_DEV ? process.cwd() : process.resourcesPath;
-
-  createNeovateServer({ config: { cwd } })
-    .then((instance) => {
-      serverInstance = instance;
-      mainWindow?.webContents.send('neovate-server:ready', {
-        url: instance.url,
-      });
-    })
-    .catch((error) => {
-      console.error('Failed to start server:', error);
-      mainWindow?.webContents.send('neovate-server:error', {
-        code: ErrorCodes.SPAWN_FAILED,
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
-    });
 }
+
+ipcMain.handle('neovate-server:create', async () => {
+  if (serverInstance) {
+    return { url: serverInstance.url };
+  }
+
+  try {
+    const instance = await createNeovateServer();
+    serverInstance = instance;
+    return { url: instance.url };
+  } catch (error) {
+    throw {
+      code: ErrorCodes.SPAWN_FAILED,
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
 
 // Handle directory listing requests with confirmation
 ipcMain.on('request-list-directory', (event) => {
@@ -81,7 +80,6 @@ ipcMain.on('confirm-response', async (event, { confirmed }) => {
       const files = await fs.readdir(PROJECT_DIR);
       result = { success: true, files };
     } catch (error) {
-      console.error('Error reading directory:', error);
       result = { success: false, message: (error as Error).message };
     }
   } else {
@@ -135,7 +133,6 @@ ipcMain.handle('store:save', async (_event, state) => {
       message = 'Cannot create config directory';
     }
 
-    console.error('Store save error:', err);
     throw new Error(message);
   }
 });
@@ -152,42 +149,18 @@ ipcMain.handle('store:load', async () => {
       return null;
     }
 
-    // JSON parse error - log and return null for fresh start
+    // JSON parse error - return null for fresh start
     if (error instanceof SyntaxError) {
-      console.error('Failed to parse store.json, starting fresh:', error);
       return null;
     }
 
-    // Other errors - log but return null
-    console.error('Failed to load store:', error);
+    // Other errors - return null
     return null;
   }
 });
 
-// Server retry handler
-ipcMain.on('neovate-server:retry', async () => {
-  if (!mainWindow) return;
-
-  if (serverInstance) {
-    serverInstance.close();
-    serverInstance = null;
-  }
-
-  const cwd = IS_DEV ? process.cwd() : process.resourcesPath;
-  createNeovateServer({ config: { cwd } })
-    .then((instance) => {
-      serverInstance = instance;
-      mainWindow?.webContents.send('neovate-server:ready', {
-        url: instance.url,
-      });
-    })
-    .catch((error) => {
-      console.error('Failed to restart server:', error);
-      mainWindow?.webContents.send('neovate-server:error', {
-        code: ErrorCodes.SPAWN_FAILED,
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
-    });
+ipcMain.on('app:quit', () => {
+  app.quit();
 });
 
 // Shutdown handlers
@@ -197,7 +170,20 @@ app.on('before-quit', () => {
   }
 });
 
-app.whenReady().then(createWindow);
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection', reason);
+});
+
+app.whenReady().then(() => {
+  autoUpdater.on('error', (error) => {
+    console.error('Auto updater error', error);
+  });
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

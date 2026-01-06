@@ -1,3 +1,3 @@
 import { app } from 'electron';
 
-export const IS_DEV = !app.isPackaged;
+export const isDev = !app.isPackaged;

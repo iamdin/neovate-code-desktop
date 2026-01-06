@@ -30,22 +30,10 @@ contextBridge.exposeInMainWorld('electron', {
   // Directory selection
   selectDirectory: (): Promise<string | null> =>
     ipcRenderer.invoke('select-directory'),
+  rendererReady: () => ipcRenderer.send('renderer:ready'),
 
-  // Server events
-  onServerReady: (callback: (data: { url: string }) => void) => {
-    const listener = (_event: any, data: { url: string }) => callback(data);
-    ipcRenderer.on('neovate-server:ready', listener);
-    return () => ipcRenderer.removeListener('neovate-server:ready', listener);
-  },
+  createNeovateServer: (): Promise<{ url: string }> =>
+    ipcRenderer.invoke('neovate-server:create'),
 
-  onServerError: (
-    callback: (data: { code: string; message: string }) => void,
-  ) => {
-    const listener = (_event: any, data: { code: string; message: string }) =>
-      callback(data);
-    ipcRenderer.on('neovate-server:error', listener);
-    return () => ipcRenderer.removeListener('neovate-server:error', listener);
-  },
-
-  retryServer: () => ipcRenderer.send('neovate-server:retry'),
+  quitApp: () => ipcRenderer.send('app:quit'),
 });

@@ -9,18 +9,6 @@ export interface ServerErrorPayload {
   message: string;
 }
 
-export interface ServerConfig {
-  cwd: string;
-}
-
-export interface ServerOptions {
-  hostname?: string;
-  port?: number;
-  timeout?: number;
-  config?: ServerConfig;
-  signal?: AbortSignal;
-}
-
 export interface ServerInstance {
   url: string;
   close: () => void;

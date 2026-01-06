@@ -22,6 +22,9 @@ export interface ElectronAPI {
   saveStore: (state: any) => Promise<{ success: boolean }>;
   loadStore: () => Promise<any>;
   selectDirectory: () => Promise<string | null>;
+  rendererReady: () => void;
+  createNeovateServer: () => Promise<{ url: string }>;
+  quitApp: () => void;
 }
 
 // Extend Window interface for type safety

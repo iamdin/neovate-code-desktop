@@ -166,7 +166,7 @@ And error dialog is shown
 │   │    1. portfinder.getPortPromise() → port 49152-65535    │   │
 │   │       // IANA dynamic/private port range                │   │
 │   │                                                         │   │
-│   │    2. spawn(`neovate serve --port`)                     │   │
+│   │    2. spawn(`neovate server --port`)                    │   │
 │   │       - environment: NEOVATE_CLIENT=desktop             │   │
 │   │                                                         │   │
 │   │                                                         │   │
@@ -182,7 +182,7 @@ And error dialog is shown
                                ▼
                     ┌─────────────────────┐
                     │   Server Process    │
-                    │   (neovate serve)   │
+                    │   (neovate server)  │
                     │                     │
                     │  - HTTP Server      │
                     │  - WebSocket        │
