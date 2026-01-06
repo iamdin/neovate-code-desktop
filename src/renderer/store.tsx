@@ -93,6 +93,11 @@ interface StoreState {
   messageBus: MessageBus | null;
   initialized: boolean;
 
+  // Server state (for startup flow)
+  serverState: 'splash' | 'ready' | 'error';
+  serverUrl: string | null;
+  serverError: { code: string; message: string } | null;
+
   // Entity data
   repos: Record<RepoId, RepoData>;
   workspaces: Record<WorkspaceId, WorkspaceData>;
@@ -146,6 +151,12 @@ interface StoreActions {
     parentUuid?: string;
     think: ThinkingLevel;
   }) => Promise<void>;
+
+  // Server state actions
+  setServerState: (state: 'splash' | 'ready' | 'error') => void;
+  setServerReady: (url: string) => void;
+  setServerError: (error: { code: string; message: string }) => void;
+  setUrl: (url: string) => void;
 
   // Session processing state helpers
   getSessionProcessing: (sessionId: string) => SessionProcessingState;
@@ -226,6 +237,11 @@ const useStore = create<Store>()((set, get) => ({
   messageBus: null,
   initialized: false,
 
+  // Initial server state
+  serverState: 'splash',
+  serverUrl: null,
+  serverError: null,
+
   // Initial entity data
   repos: {},
   workspaces: {},
@@ -263,16 +279,18 @@ const useStore = create<Store>()((set, get) => ({
   slashCommandJSXBySession: {},
 
   connect: async () => {
-    const { transport } = get();
+    const { transport, serverUrl } = get();
     if (transport?.isConnected()) {
       return;
     }
 
     set({ state: 'connecting' });
 
+    const url = serverUrl ?? 'ws://localhost:1024/ws';
+
     try {
       const newTransport = new WebSocketTransport({
-        url: 'ws://localhost:1024/ws',
+        url,
         reconnectInterval: 1000,
         maxReconnectInterval: 30000,
         shouldReconnect: true,
@@ -394,6 +412,24 @@ const useStore = create<Store>()((set, get) => ({
 
     set({ initialized: true });
   },
+
+  setServerState: (state) => set({ serverState: state }),
+
+  setServerReady: (url) =>
+    set({
+      serverState: 'ready',
+      serverUrl: url,
+      serverError: null,
+    }),
+
+  setServerError: (error) =>
+    set({
+      serverState: 'error',
+      serverUrl: null,
+      serverError: error,
+    }),
+
+  setUrl: (url) => set({ serverUrl: url }),
 
   getSessionProcessing: (sessionId: string): SessionProcessingState => {
     const { sessionProcessing } = get();

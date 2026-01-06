@@ -4,6 +4,9 @@ import { MainLayout } from './components';
 import { useStoreConnection } from './hooks';
 import { Spinner } from './components/ui';
 import { SettingsPage } from './components/settings';
+import { SplashScreen } from './components/SplashScreen';
+import { ServerErrorDialog } from './components/ServerErrorDialog';
+import { app } from 'electron';
 
 function App() {
   // Establish WebSocket connection on mount
@@ -20,7 +23,59 @@ function App() {
     showSettings,
     getGlobalConfigValue,
     globalConfig,
+    serverState,
+    serverError,
+    setServerReady,
+    setServerError,
+    setServerState,
+    connect,
+    setUrl,
   } = useStore();
+
+  // Handle server events
+  useEffect(() => {
+    const removeReadyListener = window.electron.onServerReady((data) => {
+      setServerReady(data.url);
+      setUrl(data.url);
+      connect();
+    });
+
+    const removeErrorListener = window.electron.onServerError((data) => {
+      setServerError(data);
+    });
+
+    return () => {
+      removeReadyListener();
+      removeErrorListener();
+    };
+  }, [setServerReady, setServerError, setUrl, connect]);
+
+  // Handle retry
+  const handleRetry = () => {
+    setServerState('splash');
+    window.electron.retryServer();
+  };
+
+  // Handle exit
+  const handleExit = () => {
+    app.quit();
+  };
+
+  // Show splash screen while server is starting
+  if (serverState === 'splash') {
+    return <SplashScreen />;
+  }
+
+  // Show error dialog if server failed
+  if (serverState === 'error') {
+    return (
+      <ServerErrorDialog
+        message={serverError?.message ?? 'An unknown error occurred'}
+        onRetry={handleRetry}
+        onExit={handleExit}
+      />
+    );
+  }
 
   // Get theme from config (default to 'system')
   const theme = getGlobalConfigValue<string>('desktop.theme', 'system');

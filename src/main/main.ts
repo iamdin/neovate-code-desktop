@@ -3,8 +3,13 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs/promises';
 import os from 'os';
+import { createNeovateServer } from './server/create';
+import type { ServerInstance } from './server/types';
+import { IS_DEV } from './env';
+import { ErrorCodes } from './server/constants';
 
 let mainWindow: BrowserWindow | null = null;
+let serverInstance: ServerInstance | null = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -37,51 +42,69 @@ function createWindow() {
     mainWindow = null;
   });
 
-  // Handle directory listing requests with confirmation
-  ipcMain.on('request-list-directory', (event) => {
-    const PROJECT_DIR =
-      '/Users/chencheng/Documents/Code/github.com/neovateai/neovate-code-desktop';
-    // Send confirmation request back to renderer
-    event.sender.send('confirm-list-directory', { path: PROJECT_DIR });
-  });
+  // Start Neovate server
+  const cwd = IS_DEV ? process.cwd() : process.resourcesPath;
 
-  ipcMain.on('confirm-response', async (event, { confirmed }) => {
-    const PROJECT_DIR =
-      '/Users/chencheng/Documents/Code/github.com/neovateai/neovate-code-desktop';
-    let result: { success: boolean; files?: string[]; message?: string };
-
-    if (confirmed) {
-      try {
-        const files = await fs.readdir(PROJECT_DIR);
-        result = { success: true, files };
-      } catch (error) {
-        console.error('Error reading directory:', error);
-        result = { success: false, message: (error as Error).message };
-      }
-    } else {
-      result = { success: false, message: 'Directory listing cancelled' };
-    }
-
-    // Send result back to renderer
-    event.sender.send('directory-result', result);
-  });
-
-  // Handle directory selection dialog
-  ipcMain.handle('select-directory', async () => {
-    if (!mainWindow) return null;
-
-    const result = await dialog.showOpenDialog(mainWindow, {
-      properties: ['openDirectory'],
-      title: 'Select Repository Directory',
+  createNeovateServer({ config: { cwd } })
+    .then((instance) => {
+      serverInstance = instance;
+      mainWindow?.webContents.send('neovate-server:ready', {
+        url: instance.url,
+      });
+    })
+    .catch((error) => {
+      console.error('Failed to start server:', error);
+      mainWindow?.webContents.send('neovate-server:error', {
+        code: ErrorCodes.SPAWN_FAILED,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
     });
-
-    if (result.canceled) {
-      return null;
-    }
-
-    return result.filePaths[0] || null;
-  });
 }
+
+// Handle directory listing requests with confirmation
+ipcMain.on('request-list-directory', (event) => {
+  const PROJECT_DIR =
+    '/Users/chencheng/Documents/Code/github.com/neovateai/neovate-code-desktop';
+  // Send confirmation request back to renderer
+  event.sender.send('confirm-list-directory', { path: PROJECT_DIR });
+});
+
+ipcMain.on('confirm-response', async (event, { confirmed }) => {
+  const PROJECT_DIR =
+    '/Users/chencheng/Documents/Code/github.com/neovateai/neovate-code-desktop';
+  let result: { success: boolean; files?: string[]; message?: string };
+
+  if (confirmed) {
+    try {
+      const files = await fs.readdir(PROJECT_DIR);
+      result = { success: true, files };
+    } catch (error) {
+      console.error('Error reading directory:', error);
+      result = { success: false, message: (error as Error).message };
+    }
+  } else {
+    result = { success: false, message: 'Directory listing cancelled' };
+  }
+
+  // Send result back to renderer
+  event.sender.send('directory-result', result);
+});
+
+// Handle directory selection dialog
+ipcMain.handle('select-directory', async () => {
+  if (!mainWindow) return null;
+
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    title: 'Select Repository Directory',
+  });
+
+  if (result.canceled) {
+    return null;
+  }
+
+  return result.filePaths[0] || null;
+});
 
 // Store persistence IPC handlers
 const STORE_DIR = path.join(os.homedir(), '.neovate', 'desktop');
@@ -136,6 +159,39 @@ ipcMain.handle('store:load', async () => {
     // Other errors - log but return null
     console.error('Failed to load store:', error);
     return null;
+  }
+});
+
+// Server retry handler
+ipcMain.on('neovate-server:retry', async () => {
+  if (!mainWindow) return;
+
+  if (serverInstance) {
+    serverInstance.close();
+    serverInstance = null;
+  }
+
+  const cwd = IS_DEV ? process.cwd() : process.resourcesPath;
+  createNeovateServer({ config: { cwd } })
+    .then((instance) => {
+      serverInstance = instance;
+      mainWindow?.webContents.send('neovate-server:ready', {
+        url: instance.url,
+      });
+    })
+    .catch((error) => {
+      console.error('Failed to restart server:', error);
+      mainWindow?.webContents.send('neovate-server:error', {
+        code: ErrorCodes.SPAWN_FAILED,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    });
+});
+
+// Shutdown handlers
+app.on('before-quit', () => {
+  if (serverInstance) {
+    serverInstance.close();
   }
 });
 

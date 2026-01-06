@@ -70,7 +70,9 @@
     "zustand": "^5.0.8"
   },
   "dependencies": {
+    "@neovate/code": "latest",
     "electron-updater": "^6.6.2",
+    "portfinder": "^1.0.32",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
@@ -90,6 +92,9 @@
     ],
     "files": [
       "dist/**/*"
+    ],
+    "asarUnpack": [
+      "**/node_modules/@neovate/code/**/*"
     ],
     "mac": {
       "category": "public.app-category.developer-tools",
