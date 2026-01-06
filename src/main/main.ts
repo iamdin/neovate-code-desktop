@@ -8,8 +8,7 @@ import { ErrorCodes } from './server/constants';
 import { createNeovateServer } from './server/create';
 import type { ServerInstance } from './server/types';
 
-const _dirname =
-  (globalThis as { __dirname?: string }).__dirname ?? process.cwd();
+declare const __dirname: string;
 
 let mainWindow: BrowserWindow | null = null;
 let serverInstance: ServerInstance | null = null;
@@ -19,7 +18,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path.join(_dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
@@ -33,7 +32,7 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(_dirname, '../../renderer/index.html'));
+    mainWindow.loadFile(path.join(__dirname, '../../renderer/index.html'));
   }
 
   // Check for updates in production
