@@ -124,6 +124,7 @@ interface StoreState {
   sidebarCollapsed: boolean;
   openRepoAccordions: string[];
   expandedSessionGroups: Record<string, boolean>;
+  isTestComponentVisible: boolean;
 
   // Config state
   globalConfig: Record<string, any> | null;
@@ -210,6 +211,7 @@ interface StoreActions {
   toggleSidebar: () => void;
   setOpenRepoAccordions: (ids: string[]) => void;
   toggleSessionGroupExpanded: (workspaceId: string) => void;
+  setTestComponentVisible: (visible: boolean) => void;
 
   // Config actions
   loadGlobalConfig: () => Promise<void>;
@@ -266,6 +268,7 @@ const useStore = create<Store>()((set, get) => ({
   sidebarCollapsed: false,
   openRepoAccordions: [],
   expandedSessionGroups: {},
+  isTestComponentVisible: false,
 
   // Initial config state
   globalConfig: null,
@@ -1034,6 +1037,10 @@ const useStore = create<Store>()((set, get) => ({
         [workspaceId]: !state.expandedSessionGroups[workspaceId],
       },
     }));
+  },
+
+  setTestComponentVisible: (visible: boolean) => {
+    set({ isTestComponentVisible: visible });
   },
 
   // Config actions

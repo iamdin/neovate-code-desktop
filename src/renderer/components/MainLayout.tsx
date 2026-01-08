@@ -24,6 +24,9 @@ export const MainLayout = ({
   onExecuteCommand: (command: string) => Promise<void>;
 }) => {
   const sidebarCollapsed = useStore((state) => state.sidebarCollapsed);
+  const isTestComponentVisible = useStore(
+    (state) => state.isTestComponentVisible,
+  );
 
   // Determine empty state type
   const emptyStateType = !selectedWorkspace
@@ -38,16 +41,18 @@ export const MainLayout = ({
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
       <div className="flex flex-1 overflow-hidden">
-        <RepoSidebar
-          repos={repos}
-          selectedRepoPath={selectedRepoPath}
-          selectedWorkspaceId={selectedWorkspaceId}
-          onSelectRepo={onSelectRepo}
-          onSelectWorkspace={onSelectWorkspace}
-        />
+        {!isTestComponentVisible && (
+          <RepoSidebar
+            repos={repos}
+            selectedRepoPath={selectedRepoPath}
+            selectedWorkspaceId={selectedWorkspaceId}
+            onSelectRepo={onSelectRepo}
+            onSelectWorkspace={onSelectWorkspace}
+          />
+        )}
 
         <div
-          className={`flex-1 flex flex-col ${sidebarCollapsed ? 'ml-12' : 'ml-64'}`}
+          className={`flex-1 flex flex-col ${!isTestComponentVisible && (sidebarCollapsed ? 'ml-12' : 'ml-64')}`}
         >
           <WorkspacePanel
             workspace={selectedWorkspace}
