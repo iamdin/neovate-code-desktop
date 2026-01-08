@@ -1,15 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from './store';
 import { MainLayout } from './components';
 import { useStoreConnection } from './hooks';
-import { Spinner } from './components/ui';
 import { SettingsPage } from './components/settings';
+import { ServerErrorDialog } from './components/server-error-dialog';
 
 function App() {
-  // Establish WebSocket connection on mount
-  const connectionState = useStoreConnection();
+  const { connectionState, serverError, retry, exit } = useStoreConnection();
 
-  // Get state and actions from the store
   const {
     repos,
     workspaces,
@@ -20,6 +18,7 @@ function App() {
     showSettings,
     getGlobalConfigValue,
     globalConfig,
+    initialized,
   } = useStore();
 
   // Get theme from config (default to 'system')
@@ -82,6 +81,23 @@ function App() {
     }
   }, [theme, globalConfig]);
 
+  if (connectionState === 'error') {
+    return (
+      <ServerErrorDialog
+        message={serverError?.message ?? 'An unknown error occurred'}
+        onRetry={retry}
+        onExit={exit}
+      />
+    );
+  }
+  if (
+    connectionState === 'idle' ||
+    connectionState === 'connecting' ||
+    (!initialized && connectionState === 'disconnected')
+  ) {
+    return <AppLoading />;
+  }
+
   // Get the selected workspace
   const selectedWorkspace = selectedWorkspaceId
     ? workspaces[selectedWorkspaceId]
@@ -94,20 +110,6 @@ function App() {
     // For now, we'll just simulate the execution
     return Promise.resolve();
   };
-
-  // Show loading UI while connecting
-  if (connectionState !== 'connected') {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Spinner className="h-8 w-8" />
-          <p className="text-muted-foreground text-sm">
-            Connecting to server...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // Show settings page if enabled
   if (showSettings) {
@@ -129,6 +131,31 @@ function App() {
         onSelectWorkspace={selectWorkspace}
         onExecuteCommand={handleExecuteCommand}
       />
+    </div>
+  );
+}
+
+function AppLoading() {
+  const [text, setText] = useState('');
+  const fullText = 'Neovate';
+
+  useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (index < fullText.length) {
+        setText(fullText.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 150);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex h-screen w-screen flex-col items-center justify-center bg-white text-neutral-900">
+      <div className="text-6xl font-light">{text}</div>
     </div>
   );
 }

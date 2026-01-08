@@ -88,10 +88,17 @@ const defaultSessionProcessingState: SessionProcessingState = {
 
 interface StoreState {
   // WebSocket connection state
-  state: 'disconnected' | 'connecting' | 'connected' | 'error';
+  // Flow:
+  // idle -> connecting -> connected
+  // idle/connecting -> error (startup failure)
+  // connected -> disconnected -> connecting -> connected (reconnect loop)
+  state: 'idle' | 'disconnected' | 'connecting' | 'connected' | 'error';
   transport: WebSocketTransport | null;
   messageBus: MessageBus | null;
   initialized: boolean;
+
+  // Server URL
+  serverUrl: string | null;
 
   // Entity data
   repos: Record<RepoId, RepoData>;
@@ -146,6 +153,9 @@ interface StoreActions {
     parentUuid?: string;
     think: ThinkingLevel;
   }) => Promise<void>;
+
+  // Server URL action
+  setUrl: (url: string) => void;
 
   // Session processing state helpers
   getSessionProcessing: (sessionId: string) => SessionProcessingState;
@@ -215,16 +225,22 @@ interface StoreActions {
 
   // Local JSX slash command actions
   setSlashCommandJSX: (sessionId: string, jsx: React.ReactNode | null) => void;
+
+  // Connection state setter
+  setConnectionState: (state: StoreState['state']) => void;
 }
 
 type Store = StoreState & StoreActions;
 
 const useStore = create<Store>()((set, get) => ({
   // Initial WebSocket state
-  state: 'disconnected',
+  state: 'idle',
   transport: null,
   messageBus: null,
   initialized: false,
+
+  // Initial server URL
+  serverUrl: null,
 
   // Initial entity data
   repos: {},
@@ -263,23 +279,25 @@ const useStore = create<Store>()((set, get) => ({
   slashCommandJSXBySession: {},
 
   connect: async () => {
-    const { transport } = get();
+    const { transport, serverUrl } = get();
     if (transport?.isConnected()) {
       return;
     }
 
     set({ state: 'connecting' });
 
+    const url = serverUrl ?? 'ws://localhost:1024/ws';
+
     try {
       const newTransport = new WebSocketTransport({
-        url: 'ws://localhost:1024/ws',
+        url,
         reconnectInterval: 1000,
         maxReconnectInterval: 30000,
         shouldReconnect: true,
       });
 
       newTransport.onError(() => {
-        set({ state: 'error' });
+        set({ state: 'disconnected' });
       });
 
       newTransport.onClose(() => {
@@ -394,6 +412,8 @@ const useStore = create<Store>()((set, get) => ({
 
     set({ initialized: true });
   },
+
+  setUrl: (url) => set({ serverUrl: url }),
 
   getSessionProcessing: (sessionId: string): SessionProcessingState => {
     const { sessionProcessing } = get();
@@ -1221,6 +1241,8 @@ const useStore = create<Store>()((set, get) => ({
       },
     }));
   },
+
+  setConnectionState: (state) => set({ state }),
 }));
 
 export { useStore, defaultSessionInputState };

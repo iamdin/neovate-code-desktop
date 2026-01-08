@@ -30,4 +30,10 @@ contextBridge.exposeInMainWorld('electron', {
   // Directory selection
   selectDirectory: (): Promise<string | null> =>
     ipcRenderer.invoke('select-directory'),
+  rendererReady: () => ipcRenderer.send('renderer:ready'),
+
+  createNeovateServer: (): Promise<{ url: string }> =>
+    ipcRenderer.invoke('neovate-server:create'),
+
+  quitApp: () => ipcRenderer.send('app:quit'),
 });
