@@ -270,7 +270,19 @@ export function useInputHandlers({
       }
 
       if (e.key === 'Enter') {
-        if (e.metaKey || e.shiftKey || e.altKey) {
+        if (e.altKey) {
+          e.preventDefault();
+          const before = currentValue.slice(0, currentCursorPosition);
+          const after = currentValue.slice(currentCursorPosition);
+          const newPos = currentCursorPosition + 1;
+          inputState.setValue(`${before}\n${after}`);
+          inputState.setCursorPosition(newPos);
+          requestAnimationFrame(() => {
+            textarea.setSelectionRange(newPos, newPos);
+          });
+          return;
+        }
+        if (e.metaKey || e.shiftKey) {
           return;
         }
         e.preventDefault();
