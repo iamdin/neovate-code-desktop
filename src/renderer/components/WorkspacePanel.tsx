@@ -466,20 +466,17 @@ WorkspacePanel.Header = function Header() {
 
   return (
     <div
-      className="p-4"
+      className="py-3 px-4"
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
       <div className="flex items-center justify-between">
         <div>
           <h2
-            className="text-lg font-semibold"
+            className="text-base font-semibold"
             style={{ color: 'var(--text-primary)' }}
           >
-            Workspace: {workspace.branch}
+            {workspace.id}
           </h2>
-          <p className="text-sm" style={{ color: '#666' }}>
-            {workspace.repoPath}
-          </p>
         </div>
         <div className="flex gap-2">
           <OpenAppButton cwd={workspace.worktreePath} request={request} />
