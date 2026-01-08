@@ -4,6 +4,7 @@ import { WorkspacePanel } from './WorkspacePanel';
 // import { Terminal } from './Terminal';
 import TestComponent from '../TestComponent';
 import type { RepoData, WorkspaceData } from '../client/types/entities';
+import { useStore } from '../store';
 
 export const MainLayout = ({
   repos,
@@ -22,6 +23,8 @@ export const MainLayout = ({
   onSelectWorkspace: (id: string | null) => void;
   onExecuteCommand: (command: string) => Promise<void>;
 }) => {
+  const sidebarCollapsed = useStore((state) => state.sidebarCollapsed);
+
   // Determine empty state type
   const emptyStateType = !selectedWorkspace
     ? repos.length === 0
@@ -43,7 +46,9 @@ export const MainLayout = ({
           onSelectWorkspace={onSelectWorkspace}
         />
 
-        <div className="flex-1 flex flex-col">
+        <div
+          className={`flex-1 flex flex-col ${sidebarCollapsed ? 'ml-12' : 'ml-64'}`}
+        >
           <WorkspacePanel
             workspace={selectedWorkspace}
             emptyStateType={emptyStateType}

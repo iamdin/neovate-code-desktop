@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from 'react';
+import { useState, memo, type MouseEvent } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   FolderIcon,
@@ -117,11 +117,12 @@ export const RepoSidebar = ({
 
   return (
     <div
-      className={`flex flex-col h-full transition-all duration-200 ${sidebarCollapsed ? 'w-12' : 'w-64'}`}
+      className="fixed left-0 top-0 h-screen z-10 flex flex-col w-64 transition-transform duration-200"
       style={{
         backgroundColor: 'var(--bg-surface)',
         color: 'var(--text-primary)',
         borderRight: '1px solid var(--border-subtle)',
+        transform: sidebarCollapsed ? 'translateX(-208px)' : 'translateX(0)',
       }}
     >
       <RepoSidebar.Header
@@ -470,7 +471,7 @@ function InfoRow({
   );
 }
 
-RepoSidebar.Header = function Header({
+RepoSidebar.Header = memo(function Header({
   collapsed,
   onToggle,
 }: {
@@ -479,7 +480,7 @@ RepoSidebar.Header = function Header({
 }) {
   return (
     <div
-      className={`flex items-center ${collapsed ? 'justify-center px-2' : 'justify-between px-4'} py-3`}
+      className={`flex items-center ${collapsed ? 'justify-end px-2' : 'justify-between px-4'} py-3`}
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
       {!collapsed && (
@@ -499,14 +500,18 @@ RepoSidebar.Header = function Header({
       </button>
     </div>
   );
-};
+});
 
-RepoSidebar.Footer = function Footer({ collapsed }: { collapsed: boolean }) {
+RepoSidebar.Footer = memo(function Footer({
+  collapsed,
+}: {
+  collapsed: boolean;
+}) {
   const setShowSettings = useStore((state) => state.setShowSettings);
 
   return (
     <div
-      className={`py-2 flex ${collapsed ? 'flex-col items-center px-2 gap-1' : 'flex-row px-3 gap-2'}`}
+      className={`py-2 flex ${collapsed ? 'flex-col items-end px-2 gap-1' : 'flex-row px-3 gap-2'}`}
       style={{ borderTop: '1px solid var(--border-subtle)' }}
     >
       <AddRepoMenu>
@@ -528,4 +533,4 @@ RepoSidebar.Footer = function Footer({ collapsed }: { collapsed: boolean }) {
       </div>
     </div>
   );
-};
+});
