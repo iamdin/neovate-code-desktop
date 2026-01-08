@@ -1,4 +1,4 @@
-import { useState, memo, type MouseEvent } from 'react';
+import { useState, useEffect, memo, type MouseEvent } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   FolderIcon,
@@ -94,6 +94,17 @@ export const RepoSidebar = ({
   const [alertDialogOpen, setAlertDialogOpen] = useState(false);
   const [selectedRepoForDialog, setSelectedRepoForDialog] =
     useState<RepoData | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768 && !sidebarCollapsed) {
+        toggleSidebar();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [sidebarCollapsed, toggleSidebar]);
 
   const handleRepoInfoClick = (repo: RepoData, e: MouseEvent) => {
     e.stopPropagation();

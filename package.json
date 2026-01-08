@@ -16,7 +16,8 @@
     "package:mac": "npm run build && electron-builder --mac",
     "preinstall": "npx only-allow npm",
     "postinstall": "electron-builder install-app-deps",
-    "prepare": "husky"
+    "prepare": "husky",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "electron",
