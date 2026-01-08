@@ -1,37 +1,37 @@
+import { ChevronDown } from 'lucide-react';
 import {
   createContext,
+  memo,
+  useCallback,
   useContext,
-  useState,
   useEffect,
   useMemo,
   useRef,
-  memo,
-  useCallback,
+  useState,
 } from 'react';
-import type { WorkspaceData, SessionData } from '../client/types/entities';
-import type { NormalizedMessage } from '../client/types/message';
 import { Button } from '@/components/ui/button';
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
+import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/menu';
-import { ChevronDown } from 'lucide-react';
-import {
-  Empty,
-  EmptyMedia,
-  EmptyHeader,
-  EmptyTitle,
-  EmptyDescription,
-} from '@/components/ui/empty';
+import type { SessionData, WorkspaceData } from '../client/types/entities';
+import type { NormalizedMessage } from '../client/types/message';
 import { useStore } from '../store';
+import { ActivityIndicator } from './ActivityIndicator';
 import { ChatInput, type ChatInputHandle } from './ChatInput';
 import { Message } from './messages/Message';
-import { toastManager } from './ui/toast';
 import { splitMessages } from './messages/messageHelpers';
 import { OpenAppButton } from './OpenAppButton';
-import { ActivityIndicator } from './ActivityIndicator';
+import { toastManager } from './ui/toast';
 
 // Define the context type
 interface WorkspaceContextType {
@@ -272,29 +272,49 @@ export const WorkspacePanel = ({
     setSessionInput,
   ]);
 
-  const sendMessage = async (content: string) => {
-    if (!content.trim() || isLoading) return;
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!content.trim() || isLoading) return;
 
-    const inputState = getSessionInput(selectedSessionId || '');
+      const inputState = getSessionInput(selectedSessionId || '');
 
-    setIsLoading(true);
-    try {
-      await storeSendMessage({
-        message: content,
-        planMode: inputState.planMode,
-        think: inputState.thinking,
-      });
+      setIsLoading(true);
+      try {
+        await storeSendMessage({
+          message: content,
+          planMode: inputState.planMode,
+          think: inputState.thinking,
+        });
+        setInputValue('');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isLoading, selectedSessionId, getSessionInput, storeSendMessage],
+  );
+
+  const handleSelectSession = useCallback(
+    (id: string) => {
+      selectSession(id);
       setInputValue('');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [selectSession],
+  );
 
-  // Handle session switching - reset input
-  const handleSelectSession = (id: string) => {
-    selectSession(id);
-    setInputValue('');
-  };
+  const handleCancel = useCallback(() => {
+    if (selectedSessionId) {
+      cancelSession(selectedSessionId);
+    }
+    setIsLoading(false);
+  }, [selectedSessionId, cancelSession]);
+
+  const handleShowForkModal = useCallback(() => {
+    toastManager.add({
+      type: 'info',
+      title: 'Fork session',
+      description: 'Fork functionality is not implemented yet',
+    });
+  }, []);
 
   // Create wrapper functions that provide context for ChatInput
   const fetchPaths = useCallback(async () => {
@@ -321,7 +341,33 @@ export const WorkspacePanel = ({
     }
   }, [selectedSessionId]);
 
-  if (!workspace) {
+  const contextValue: WorkspaceContextType | null = useMemo(() => {
+    if (!workspace) return null;
+    return {
+      workspace,
+      activeSession,
+      allSessions,
+      selectedSessionId,
+      selectSession: handleSelectSession,
+      messages,
+      inputValue,
+      isLoading,
+      sendMessage,
+      setInputValue,
+    };
+  }, [
+    workspace,
+    activeSession,
+    allSessions,
+    selectedSessionId,
+    handleSelectSession,
+    messages,
+    inputValue,
+    isLoading,
+    sendMessage,
+  ]);
+
+  if (!workspace || !contextValue) {
     return (
       <div className="flex items-center justify-center h-full">
         <Empty>
@@ -345,19 +391,6 @@ export const WorkspacePanel = ({
     );
   }
 
-  const contextValue: WorkspaceContextType = {
-    workspace,
-    activeSession,
-    allSessions,
-    selectedSessionId,
-    selectSession: handleSelectSession,
-    messages,
-    inputValue,
-    isLoading,
-    sendMessage,
-    setInputValue,
-  };
-
   return (
     <WorkspaceContext.Provider value={contextValue}>
       <div
@@ -376,19 +409,8 @@ export const WorkspacePanel = ({
           <ChatInput
             ref={chatInputRef}
             onSubmit={sendMessage}
-            onCancel={() => {
-              if (selectedSessionId) {
-                cancelSession(selectedSessionId);
-              }
-              setIsLoading(false);
-            }}
-            onShowForkModal={() => {
-              toastManager.add({
-                type: 'info',
-                title: 'Fork session',
-                description: 'Fork functionality is not implemented yet',
-              });
-            }}
+            onCancel={handleCancel}
+            onShowForkModal={handleShowForkModal}
             fetchPaths={fetchPaths}
             fetchCommands={fetchCommands}
             placeholder={

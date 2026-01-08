@@ -1,32 +1,33 @@
 import {
-  useMemo,
-  useState,
+  BrainIcon,
+  ChipIcon,
+  ComputerTerminal01Icon,
+  NoteEditIcon,
+  NoteIcon,
+  SentIcon,
+} from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
+import type React from 'react';
+import {
+  forwardRef,
+  memo,
   useCallback,
   useEffect,
-  useRef,
-  forwardRef,
   useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
 } from 'react';
-import type React from 'react';
-import { HugeiconsIcon } from '@hugeicons/react';
-import {
-  SentIcon,
-  ChipIcon,
-  NoteEditIcon,
-  BrainIcon,
-  ComputerTerminal01Icon,
-  NoteIcon,
-} from '@hugeicons/core-free-icons';
 import { useInputHandlers } from '../../hooks/useInputHandlers';
-import { SuggestionDropdown } from './SuggestionDropdown';
-import { ImagePreview } from './ImagePreview';
-import { Textarea, Tooltip, TooltipTrigger, TooltipPopup, Button } from '../ui';
 import type { SlashCommand } from '../../hooks/useSlashCommands';
 import type {
-  HandlerMethod,
   HandlerInput,
+  HandlerMethod,
   HandlerOutput,
 } from '../../nodeBridge.types';
+import { Button, Textarea, Tooltip, TooltipPopup, TooltipTrigger } from '../ui';
+import { ImagePreview } from './ImagePreview';
+import { SuggestionDropdown } from './SuggestionDropdown';
 
 // Provider type from the API
 interface Provider {
@@ -75,8 +76,8 @@ export interface ChatInputHandle {
   focus: () => void;
 }
 
-export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
-  function ChatInput(
+export const ChatInput = memo(
+  forwardRef<ChatInputHandle, ChatInputProps>(function ChatInput(
     {
       onSubmit,
       onCancel = noop,
@@ -357,7 +358,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         ...e,
         target: {
           ...e.target,
-          // @ts-ignore
+          // @ts-expect-error
           selectionStart: e.target.selectionStart,
         },
       } as React.KeyboardEvent<HTMLTextAreaElement>);
@@ -692,5 +693,5 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         </div>
       </div>
     );
-  },
+  }),
 );
