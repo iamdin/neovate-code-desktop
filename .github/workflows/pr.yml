@@ -52,7 +52,7 @@ jobs:
             const { data: { artifacts } } = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              run_id: process.env.GITHUB_RUN_ID,
+              run_id: context.runId,
             });
 
             const arm64 = artifacts.find(a => a.name === 'neovate-dev-arm64');
