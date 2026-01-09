@@ -14,9 +14,10 @@
     "package": "npm run build && electron-builder --mac --config configs/electron-builder.json",
     "package:dev": "npm run build && electron-builder --mac --config configs/electron-builder.dev.json",
     "postinstall": "electron-builder install-app-deps",
-    "preinstall": "npx only-allow npm",
-    "test": "vitest",
     "prepare": "husky",
+    "preinstall": "npx only-allow npm",
+    "release": "npx bumpp",
+    "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
@@ -51,6 +52,7 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/ui": "^4.0.10",
     "autoprefixer": "^10.4.22",
+    "bumpp": "^10.3.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "concurrently": "^9.2.1",
@@ -71,8 +73,8 @@
     "zustand": "^5.0.8"
   },
   "dependencies": {
-    "@pierre/diffs": "^1.0.2",
     "@neovate/code": "^0.22.10",
+    "@pierre/diffs": "^1.0.2",
     "electron-updater": "^6.6.2",
     "portfinder": "^1.0.32",
     "react": "^19.2.0",
