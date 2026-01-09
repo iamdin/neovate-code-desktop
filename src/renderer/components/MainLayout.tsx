@@ -4,6 +4,7 @@ import { WorkspacePanel } from './WorkspacePanel';
 // import { Terminal } from './Terminal';
 import TestComponent from '../TestComponent';
 import type { RepoData, WorkspaceData } from '../client/types/entities';
+import { useStore } from '../store';
 
 export const MainLayout = ({
   repos,
@@ -22,6 +23,11 @@ export const MainLayout = ({
   onSelectWorkspace: (id: string | null) => void;
   onExecuteCommand: (command: string) => Promise<void>;
 }) => {
+  const sidebarCollapsed = useStore((state) => state.sidebarCollapsed);
+  const isTestComponentVisible = useStore(
+    (state) => state.isTestComponentVisible,
+  );
+
   // Determine empty state type
   const emptyStateType = !selectedWorkspace
     ? repos.length === 0
@@ -35,15 +41,19 @@ export const MainLayout = ({
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
       <div className="flex flex-1 overflow-hidden">
-        <RepoSidebar
-          repos={repos}
-          selectedRepoPath={selectedRepoPath}
-          selectedWorkspaceId={selectedWorkspaceId}
-          onSelectRepo={onSelectRepo}
-          onSelectWorkspace={onSelectWorkspace}
-        />
+        {!isTestComponentVisible && (
+          <RepoSidebar
+            repos={repos}
+            selectedRepoPath={selectedRepoPath}
+            selectedWorkspaceId={selectedWorkspaceId}
+            onSelectRepo={onSelectRepo}
+            onSelectWorkspace={onSelectWorkspace}
+          />
+        )}
 
-        <div className="flex-1 flex flex-col">
+        <div
+          className={`flex-1 flex flex-col ${!isTestComponentVisible && (sidebarCollapsed ? 'ml-12' : 'ml-64')}`}
+        >
           <WorkspacePanel
             workspace={selectedWorkspace}
             emptyStateType={emptyStateType}

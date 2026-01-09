@@ -4,6 +4,7 @@ import { WebSocketTransport } from './client/transport/WebSocketTransport';
 import { MessageBus } from './client/messaging/MessageBus';
 import { randomUUID } from './utils/uuid';
 import { getNestedValue, setNestedValue } from './lib/utils';
+import { toastManager } from './components/ui/toast';
 import type {
   RepoData,
   WorkspaceData,
@@ -123,6 +124,7 @@ interface StoreState {
   sidebarCollapsed: boolean;
   openRepoAccordions: string[];
   expandedSessionGroups: Record<string, boolean>;
+  isTestComponentVisible: boolean;
 
   // Config state
   globalConfig: Record<string, any> | null;
@@ -209,6 +211,7 @@ interface StoreActions {
   toggleSidebar: () => void;
   setOpenRepoAccordions: (ids: string[]) => void;
   toggleSessionGroupExpanded: (workspaceId: string) => void;
+  setTestComponentVisible: (visible: boolean) => void;
 
   // Config actions
   loadGlobalConfig: () => Promise<void>;
@@ -265,6 +268,7 @@ const useStore = create<Store>()((set, get) => ({
   sidebarCollapsed: false,
   openRepoAccordions: [],
   expandedSessionGroups: {},
+  isTestComponentVisible: false,
 
   // Initial config state
   globalConfig: null,
@@ -624,11 +628,19 @@ const useStore = create<Store>()((set, get) => ({
             }));
             return;
           } else {
-            alert(`${command} Local JSX commands are not supported`);
+            toastManager.add({
+              type: 'error',
+              title: 'Command not supported',
+              description: `${parsed.command} Local JSX commands are not supported`,
+            });
           }
           return;
         } else {
-          alert(`${command} Unknown slash command type: ${type}`);
+          toastManager.add({
+            type: 'error',
+            title: 'Unknown command type',
+            description: `${command} Unknown slash command type: ${type}`,
+          });
           return;
         }
       }
@@ -642,6 +654,33 @@ const useStore = create<Store>()((set, get) => ({
       error: null,
       retryInfo: null,
     });
+
+    // Fire-and-forget summarization on first message
+    const sessionMessages = get().messages[sessionId] || [];
+    const userMessages = sessionMessages.filter((m) => m.role === 'user');
+    if (userMessages.length === 0 && message) {
+      (async () => {
+        try {
+          const summary = await request('utils.summarizeMessage', {
+            message,
+            cwd,
+          });
+          if (summary.success && summary.data.text) {
+            const res = JSON.parse(summary.data.text.trim());
+            if (res.title) {
+              await request('session.config.setSummary', {
+                cwd,
+                sessionId,
+                summary: res.title,
+              });
+              updateSession(selectedWorkspaceId, sessionId, {
+                summary: res.title,
+              });
+            }
+          }
+        } catch (_error) {}
+      })();
+    }
 
     try {
       // Transform params to backend format
@@ -667,39 +706,6 @@ const useStore = create<Store>()((set, get) => ({
           error: null,
           retryInfo: null,
         });
-
-        const workspaceSessions = sessions[selectedWorkspaceId];
-        const session = workspaceSessions.find(
-          (s) => s.sessionId === sessionId,
-        );
-        const sessionMessages = get().messages[sessionId] || [];
-        const userMessages = sessionMessages.filter((m) => m.role === 'user');
-        if (userMessages.length > 1) {
-          return;
-        }
-
-        // Only summarize if there's a message to summarize
-        if (message) {
-          const summary = await request('utils.summarizeMessage', {
-            message,
-            cwd,
-          });
-          if (summary.success && summary.data.text) {
-            try {
-              const res = JSON.parse(summary.data.text.trim());
-              if (res.title) {
-                await request('session.config.setSummary', {
-                  cwd,
-                  sessionId,
-                  summary: res.title,
-                });
-                updateSession(selectedWorkspaceId, sessionId, {
-                  summary: res.title,
-                });
-              }
-            } catch (_error) {}
-          }
-        }
       } else {
         // Set failed state with error message from response
         setSessionProcessing(sessionId, {
@@ -1031,6 +1037,10 @@ const useStore = create<Store>()((set, get) => ({
         [workspaceId]: !state.expandedSessionGroups[workspaceId],
       },
     }));
+  },
+
+  setTestComponentVisible: (visible: boolean) => {
+    set({ isTestComponentVisible: visible });
   },
 
   // Config actions
