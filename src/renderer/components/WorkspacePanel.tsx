@@ -466,22 +466,16 @@ WorkspacePanel.Header = function Header() {
 
   return (
     <div
-      className="py-3 px-4"
+      className="flex items-center justify-between h-12 px-4"
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <h2
-            className="text-base font-semibold"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            {workspace.id}
-          </h2>
-        </div>
-        <div className="flex gap-2">
-          <OpenAppButton cwd={workspace.worktreePath} request={request} />
-        </div>
-      </div>
+      <h2
+        className="text-base font-semibold"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        {workspace.id}
+      </h2>
+      <OpenAppButton cwd={workspace.worktreePath} request={request} />
     </div>
   );
 };

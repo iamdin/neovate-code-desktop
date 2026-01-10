@@ -18,6 +18,7 @@ import {
 import { formatDistanceToNowStrict } from 'date-fns';
 import type { RepoData } from '../client/types/entities';
 import { useStore } from '../store';
+import { cn } from '../lib/utils';
 import { Spinner } from './ui/spinner';
 
 // Helper function to format relative time using date-fns
@@ -128,12 +129,14 @@ export const RepoSidebar = ({
 
   return (
     <div
-      className="fixed left-0 top-0 h-screen z-10 flex flex-col w-64 transition-transform duration-200"
+      className={cn(
+        'fixed left-0 top-0 h-screen z-10 flex flex-col transition-all duration-200',
+        sidebarCollapsed ? 'w-12' : 'w-64',
+      )}
       style={{
         backgroundColor: 'var(--bg-surface)',
         color: 'var(--text-primary)',
         borderRight: '1px solid var(--border-subtle)',
-        transform: sidebarCollapsed ? 'translateX(-208px)' : 'translateX(0)',
       }}
     >
       <RepoSidebar.Header
@@ -357,7 +360,9 @@ export const RepoSidebar = ({
         </div>
       )}
 
-      <RepoSidebar.Footer collapsed={sidebarCollapsed} />
+      <div className="mt-auto">
+        <RepoSidebar.Footer collapsed={sidebarCollapsed} />
+      </div>
 
       <Dialog
         open={dialogOpen}
@@ -491,7 +496,10 @@ RepoSidebar.Header = memo(function Header({
 }) {
   return (
     <div
-      className={`flex items-center ${collapsed ? 'justify-end px-2' : 'justify-between px-4'} py-3`}
+      className={cn(
+        'flex items-center h-12',
+        collapsed ? 'justify-end px-2' : 'justify-between px-4',
+      )}
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
       {!collapsed && (
@@ -522,7 +530,10 @@ RepoSidebar.Footer = memo(function Footer({
 
   return (
     <div
-      className={`py-2 flex ${collapsed ? 'flex-col items-end px-2 gap-1' : 'flex-row px-3 gap-2'}`}
+      className={cn(
+        'py-2 flex',
+        collapsed ? 'flex-col items-center px-2 gap-2' : 'flex-row px-3 gap-2',
+      )}
       style={{ borderTop: '1px solid var(--border-subtle)' }}
     >
       <AddRepoMenu>
