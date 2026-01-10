@@ -19,6 +19,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import type { RepoData } from '../client/types/entities';
 import { useStore } from '../store';
 import { Spinner } from './ui/spinner';
+import { ScrollArea } from './ui/scroll-area';
 
 // Helper function to format relative time using date-fns
 function formatRelativeTime(timestamp: number): string {
@@ -142,7 +143,7 @@ export const RepoSidebar = ({
       />
 
       {!sidebarCollapsed && (
-        <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1" orientation="vertical">
           {repos.length === 0 ? (
             <Empty>
               <EmptyMedia variant="icon">
@@ -354,7 +355,7 @@ export const RepoSidebar = ({
               ))}
             </Accordion>
           )}
-        </div>
+        </ScrollArea>
       )}
 
       <RepoSidebar.Footer collapsed={sidebarCollapsed} />
