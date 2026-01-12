@@ -270,6 +270,10 @@ export function useInputHandlers({
       }
 
       if (e.key === 'Enter') {
+        // Ignore Enter during IME composition (e.g., Chinese input selecting candidates)
+        if (e.nativeEvent.isComposing) {
+          return;
+        }
         if (e.altKey) {
           e.preventDefault();
           const before = currentValue.slice(0, currentCursorPosition);
