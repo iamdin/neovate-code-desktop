@@ -209,6 +209,7 @@ interface StoreActions {
   selectSession: (id: string | null) => void;
   setShowSettings: (show: boolean) => void;
   toggleSidebar: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
   setOpenRepoAccordions: (ids: string[]) => void;
   toggleSessionGroupExpanded: (workspaceId: string) => void;
   setTestComponentVisible: (visible: boolean) => void;
@@ -1021,6 +1022,12 @@ const useStore = create<Store>()((set, get) => ({
   toggleSidebar: () => {
     set((state) => ({
       sidebarCollapsed: !state.sidebarCollapsed,
+    }));
+  },
+
+  setSidebarCollapsed: (collapsed: boolean) => {
+    set(() => ({
+      sidebarCollapsed: collapsed,
     }));
   },
 

@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useStore } from './store';
-import { MainLayout } from './components';
 import { useStoreConnection } from './hooks';
+import { RepoSidebar } from './components/RepoSidebar';
+import { WorkspacePanel } from './components/WorkspacePanel';
+import { WorkspaceChanges } from './components/WorkspaceChanges';
+import { Terminal } from './components/Terminal';
+import TestComponent from './TestComponent';
 import { SettingsPage } from './components/settings';
 import { ServerErrorDialog } from './components/server-error-dialog';
+import {
+  AppLayout,
+  AppLayoutSidebar,
+  AppLayoutPrimaryPanel,
+  AppLayoutSecondaryPanel,
+} from './components/layout';
 
 function App() {
   const { connectionState, serverError, retry, exit } = useStoreConnection();
@@ -17,7 +27,6 @@ function App() {
     selectWorkspace,
     showSettings,
     getGlobalConfigValue,
-    globalConfig,
     initialized,
   } = useStore();
 
@@ -79,7 +88,7 @@ function App() {
       console.error('Theme setup failed:', error);
       applyTheme(false); // Safe fallback to light theme
     }
-  }, [theme, globalConfig]);
+  }, [theme]);
 
   if (connectionState === 'error') {
     return (
@@ -111,26 +120,57 @@ function App() {
     return Promise.resolve();
   };
 
+  // Determine empty state type
+  const emptyStateType = !selectedWorkspace
+    ? Object.keys(repos).length === 0
+      ? 'no-repos'
+      : 'no-workspace'
+    : null;
+
   // Show settings page if enabled
   if (showSettings) {
     return (
-      <div className="h-screen flex flex-col">
+      <div className="h-dvh flex flex-col">
         <SettingsPage />
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <MainLayout
-        repos={Object.values(repos)}
-        selectedRepoPath={selectedRepoPath}
-        selectedWorkspaceId={selectedWorkspaceId}
-        selectedWorkspace={selectedWorkspace}
-        onSelectRepo={selectRepo}
-        onSelectWorkspace={selectWorkspace}
-        onExecuteCommand={handleExecuteCommand}
-      />
+    <div
+      className="flex flex-col h-dvh"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
+    >
+      <AppLayout>
+        {/* Sidebar */}
+        <AppLayoutSidebar>
+          <RepoSidebar
+            repos={Object.values(repos)}
+            selectedRepoPath={selectedRepoPath}
+            selectedWorkspaceId={selectedWorkspaceId}
+            onSelectRepo={selectRepo}
+            onSelectWorkspace={selectWorkspace}
+          />
+        </AppLayoutSidebar>
+
+        {/* Main Content */}
+        <AppLayoutPrimaryPanel>
+          <WorkspacePanel
+            workspace={selectedWorkspace}
+            emptyStateType={emptyStateType}
+          />
+        </AppLayoutPrimaryPanel>
+
+        {/* Right Panel */}
+        <AppLayoutSecondaryPanel>
+          <div className="h-full flex flex-col">
+            <WorkspaceChanges workspace={selectedWorkspace} />
+            <Terminal onExecuteCommand={handleExecuteCommand} />
+          </div>
+        </AppLayoutSecondaryPanel>
+      </AppLayout>
+
+      <TestComponent />
     </div>
   );
 }
