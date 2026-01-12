@@ -8,18 +8,7 @@
 $ npm install
 ```
 
-2. Run the `dev server` script in the [neovate-code](https://github.com/neovateai/neovate-code) repo separately in another terminal since it's not integrated into the desktop app yet.
-
-```bash
-# Disable permission and AskUserQuestion with --quiet since we don't support them yet
-$ pnpm run dev server --quiet
-[WebServer] Server running at http://127.0.0.1:1024
-[WebServer] WebSocket endpoint: ws://127.0.0.1:1024/ws
-```
-
-And make sure the server is running on port 1024.
-
-3. Run the desktop app in this repo.
+2. Run the desktop app
 
 ```bash
 $ npm run dev

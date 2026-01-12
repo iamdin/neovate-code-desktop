@@ -18,7 +18,9 @@ import {
 import { formatDistanceToNowStrict } from 'date-fns';
 import type { RepoData } from '../client/types/entities';
 import { useStore } from '../store';
+import { cn } from '../lib/utils';
 import { Spinner } from './ui/spinner';
+import { ScrollArea } from './ui/scroll-area';
 
 // Helper function to format relative time using date-fns
 function formatRelativeTime(timestamp: number): string {
@@ -129,7 +131,7 @@ export const RepoSidebar = ({
       />
 
       {!sidebarCollapsed && (
-        <div className="flex-1 overflow-y-auto">
+        <ScrollArea className="flex-1" orientation="vertical">
           {repos.length === 0 ? (
             <Empty>
               <EmptyMedia variant="icon">
@@ -341,10 +343,12 @@ export const RepoSidebar = ({
               ))}
             </Accordion>
           )}
-        </div>
+        </ScrollArea>
       )}
 
-      <RepoSidebar.Footer collapsed={sidebarCollapsed} />
+      <div className="mt-auto">
+        <RepoSidebar.Footer collapsed={sidebarCollapsed} />
+      </div>
 
       <Dialog
         open={dialogOpen}
@@ -478,7 +482,10 @@ RepoSidebar.Header = memo(function Header({
 }) {
   return (
     <div
-      className={`flex items-center ${collapsed ? 'justify-end px-2' : 'justify-between px-4'} py-3`}
+      className={cn(
+        'flex items-center h-12',
+        collapsed ? 'justify-end px-2' : 'justify-between px-4',
+      )}
       style={{ borderBottom: '1px solid var(--border-subtle)' }}
     >
       {!collapsed && (
@@ -509,7 +516,10 @@ RepoSidebar.Footer = memo(function Footer({
 
   return (
     <div
-      className={`py-2 flex ${collapsed ? 'flex-col items-end px-2 gap-1' : 'flex-row px-3 gap-2'}`}
+      className={cn(
+        'py-2 flex',
+        collapsed ? 'flex-col items-center px-2 gap-2' : 'flex-row px-3 gap-2',
+      )}
       style={{ borderTop: '1px solid var(--border-subtle)' }}
     >
       <AddRepoMenu>
